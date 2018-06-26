@@ -1,3 +1,5 @@
+import hcmus.BaseFrm;
+
 import javax.swing.*;
 
 public class NodeFrm extends BaseFrm implements INodeContract.View {
