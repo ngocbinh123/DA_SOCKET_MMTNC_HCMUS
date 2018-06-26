@@ -9,5 +9,8 @@
         <module name="client" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="base" target="6" />
+    </bytecodeTargetLevel>
   </component>
 </project>

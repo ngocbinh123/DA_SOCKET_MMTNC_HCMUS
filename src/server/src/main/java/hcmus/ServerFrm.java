@@ -1,6 +1,5 @@
 package hcmus;
 
-import hcmus.base.BaseFrm;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -20,10 +19,12 @@ public class ServerFrm extends BaseFrm implements IServerContract.View {
 
     public ServerFrm() {
         super();
+        mController.startListenConnections();
+
         actStart.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                mController.startListenConnections();
+//                mController.startListenConnections();
             }
         });
     }
