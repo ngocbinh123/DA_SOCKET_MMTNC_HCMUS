@@ -19,17 +19,13 @@ public class ClientFrm extends BaseFrm implements IClientContract.View {
 
     public ClientFrm() {
         super();
+        mController = new ClientController();
+        mController.attachView(this);
         actStart.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 mController.requestConnectToServer();
             }
         });
-    }
-
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        mController = new ClientController();
     }
 }

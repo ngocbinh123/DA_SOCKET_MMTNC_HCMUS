@@ -1,8 +1,6 @@
 package hcmus;
 
-
-
-public interface IServerContract {
+public interface ISocketServerContract {
     interface View extends ILifeCycleContract.View {
     }
 

@@ -3,8 +3,9 @@ package hcmus;
 import java.lang.ref.WeakReference;
 
 public abstract class BaseController<V extends ILifeCycleContract.View> implements ILifeCycleContract.Controller<V> {
-    private WeakReference<V> mWeekRef;
+    static int SERVER_PORT = 6789;
 
+    private WeakReference<V> mWeekRef;
     protected V getView() {
         return mWeekRef.get();
     }

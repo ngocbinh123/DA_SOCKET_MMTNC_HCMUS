@@ -1,6 +1,8 @@
 import hcmus.BaseFrm;
 
 import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class NodeFrm extends BaseFrm implements INodeContract.View {
     private NodeController mController;
@@ -17,12 +19,12 @@ public class NodeFrm extends BaseFrm implements INodeContract.View {
 
     public NodeFrm() {
         super();
-    }
-
-    @Override
-    public void onCreate() {
-        super.onCreate();
         mController = new NodeController();
         mController.attachView(this);
+        actStart.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                mController.requestConnectToServer();
+            }
+        });
     }
 }

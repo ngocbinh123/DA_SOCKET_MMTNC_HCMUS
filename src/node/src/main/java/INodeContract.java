@@ -5,5 +5,6 @@ public interface INodeContract {
     }
 
     interface Controller {
+        void requestConnectToServer();
     }
 }
