@@ -1,11 +1,10 @@
 package hcmus;
 
-import hcmus.base.BaseFrm;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class ServerFrm extends BaseFrm implements IServerContract.View {
+public class ServerFrm extends BaseFrm implements ISocketServerContract.View {
     private ServerController mController;
     private JPanel panelMain;
     private JButton actStart;
@@ -20,18 +19,16 @@ public class ServerFrm extends BaseFrm implements IServerContract.View {
 
     public ServerFrm() {
         super();
+        mController = new ServerController();
+        mController.attachView(this);
+        mController.startListenConnections();
+
         actStart.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                mController.startListenConnections();
+//                mController.startListenConnections();
             }
         });
-    }
 
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        mController = new ServerController();
-        mController.attachView(this);
     }
 }

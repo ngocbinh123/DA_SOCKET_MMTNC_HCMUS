@@ -1,9 +1,10 @@
 package hcmus;
-public interface IClientContract {
+
+public interface ISocketServerContract {
     interface View extends ILifeCycleContract.View {
     }
 
     interface Controller {
-        void requestConnectToServer();
+        void startListenConnections();
     }
 }

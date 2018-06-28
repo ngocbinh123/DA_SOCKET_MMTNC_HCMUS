@@ -1,14 +1,11 @@
 package hcmus;
 
-import hcmus.base.BaseController;
 
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class ServerController extends BaseController<IServerContract.View> implements IServerContract.Controller {
-    private static int SERVER_PORT = 6789;
-
+public class ServerController extends BaseController<ISocketServerContract.View> implements ISocketServerContract.Controller {
     ObjectOutputStream out;
     ObjectInputStream in;
     String message;
