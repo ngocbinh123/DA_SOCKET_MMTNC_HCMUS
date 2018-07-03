@@ -12,14 +12,19 @@ import java.util.List;
 
 public class ServerHandler extends Thread {
     protected Socket currentSocket;
-    protected String lastMessage;
     protected PrintWriter out;
     protected BufferedReader in;
     private SOCKET_TYPE type = SOCKET_TYPE.NODE;
     private List<String> files = new ArrayList<>();
-    public ServerHandler(Socket client) {
+
+    private ServerHandleListener listener;
+    interface ServerHandleListener {
+        void newNode(Socket socket, List<String> files);
+    }
+
+    public ServerHandler(Socket client, ServerHandleListener listener) {
         this.currentSocket = client;
-        this.lastMessage = null;
+        this.listener = listener;
         this.start();
     }
 
@@ -57,17 +62,7 @@ public class ServerHandler extends Thread {
                             }
                         }
                     }
-
-
-                }else if (received.contains(Constant.MSG_PLS_SEND_YOUR_FILES)) {
-                    System.out.println(String.format("Socket %d is %s has %d files",currentSocket.getPort(), type.name(), files.size()));
-                    received = received.replace(Constant.MSG_PLS_SEND_YOUR_FILES + ":", "").trim();
-                    String[] names = received.split(";");
-                    for (String name : names) {
-                        files.add(name);
-                        System.out.println(String.format("%d - %s - %s ", files.size(), type.name(), name));
-                    }
-                    System.out.println(String.format("----------------------------------------------------------------------"));
+                    listener.newNode(currentSocket, files);
                 }
             }while (received == null || !received.equalsIgnoreCase(Constant.MSG_QUIT));
 
