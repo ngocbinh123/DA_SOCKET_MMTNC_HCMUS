@@ -10,7 +10,7 @@ public class NodeFrm extends BaseFrm implements INodeContract.View {
     private JButton actStart;
 
     static void start() {
-        JFrame frame = new JFrame("Node Form");
+        JFrame frame = new JFrame("data.Node Form");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setContentPane(new NodeFrm().panelMain);
         frame.pack();
