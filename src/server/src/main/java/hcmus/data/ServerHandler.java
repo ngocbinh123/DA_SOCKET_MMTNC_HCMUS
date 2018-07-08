@@ -1,5 +1,6 @@
 package hcmus.data;
 
+import hcmus.BaseInfo;
 import hcmus.Constant;
 import hcmus.SOCKET_TYPE;
 
@@ -8,16 +9,15 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.List;
 
 public class ServerHandler extends Thread {
+    private BaseInfo info;
     private int newId;
     protected Socket currentSocket;
     protected PrintWriter out;
     protected BufferedReader in;
     private SOCKET_TYPE type = SOCKET_TYPE.NODE;
-    private List<String> files = new ArrayList<>();
 
     private ServerHandleListener listener;
     interface ServerHandleListener {
@@ -56,25 +56,10 @@ public class ServerHandler extends Thread {
                 } else if (received.equalsIgnoreCase(Constant.MSG_QUIT)) {
                     closeHandle();
                 } else if (received.contains(Constant.MSG_WHO_ARE_YOU)) {
-                    String[] paragraphs = received.split("  - files: ");
-
-                    if (paragraphs[0].contains(SOCKET_TYPE.CLIENT.name())) {
-                        received = received.replace(SOCKET_TYPE.CLIENT.name(), "").trim();
-                        type = SOCKET_TYPE.CLIENT;
-                    }else {
-                        type = SOCKET_TYPE.NODE;
-                    }
-
-                    if (paragraphs[1].contains(";")) {
-                        String[] names = paragraphs[1].trim().split(";");
-                        for (String name : names) {
-                            if (name != "") {
-                                files.add(name);
-                                System.out.println(String.format("%d - %s - %s ", files.size(), type.name(), name));
-                            }
-                        }
-                    }
-                    listener.newNode(newId, currentSocket, files);
+                    String json = received.replace(Constant.MSG_WHO_ARE_YOU + ": ", "");
+                    info = BaseInfo.parseToObject(json);
+                    this.newId = info.getId();
+                    listener.newNode(newId, currentSocket, info.getFileNames());
                 }
             }while (received == null || !received.equalsIgnoreCase(Constant.MSG_QUIT));
 
