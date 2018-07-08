@@ -13,13 +13,30 @@ public class Node {
     private Socket currentSocket;
     private BaseInfo info;
     private NodeListener listener;
+    private String hostName;
+    private int ip;
     BufferedReader in; // send message to server
     PrintWriter out;
     public interface NodeListener {
         void onConnectSuccessful(Node node);
     }
+
     public Node(String hostName, int ip, NodeListener listener) {
+        this.hostName = hostName;
+        this.ip = ip;
         this.listener = listener;
+    }
+
+    public void reconnect() {
+        try {
+            currentSocket = new Socket(hostName, ip);
+            connect();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void connect() {
         try {
             currentSocket = new Socket(hostName, ip);
             out = new PrintWriter(currentSocket.getOutputStream());
@@ -29,10 +46,12 @@ public class Node {
                 do {
                     buffer = in.readLine();
                     if (buffer != null && buffer.contains(Constant.MSG_WHO_ARE_YOU)) {
+                        if (info == null) {
+                            String sId = buffer.replace(String.format("%s:", Constant.MSG_WHO_ARE_YOU),"").trim();
+                            int id = Integer.parseInt(sId);
+                            info = new BaseInfo(id, FileUtils.getFilesByNodeId(id++), SOCKET_TYPE.NODE);
+                        }
 
-                        String sId = buffer.replace(String.format("%s:", Constant.MSG_WHO_ARE_YOU),"").trim();
-                        int id = Integer.parseInt(sId);
-                        info = new BaseInfo(id, FileUtils.getFilesByNodeId(id++), SOCKET_TYPE.NODE);
                         out.println(Constant.MSG_WHO_ARE_YOU + ": " + info.parseToString());
                         out.flush();
                         listener.onConnectSuccessful(this);
@@ -45,7 +64,7 @@ public class Node {
             e.printStackTrace();
         }
     }
-    
+
     public String getName() {
         return info.getName();
     }
