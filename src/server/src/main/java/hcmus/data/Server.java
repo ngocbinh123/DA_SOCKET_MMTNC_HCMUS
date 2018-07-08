@@ -1,5 +1,7 @@
 package hcmus.data;
 
+import hcmus.SOCKET_TYPE;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -10,10 +12,14 @@ public class Server extends Thread implements ServerHandler.ServerHandleListener
     private ServerSocket server;
     private List<Node> nodes = new ArrayList<>();
     private List<Socket> clients = new ArrayList<>();
+    private List<Node> disNodes = new ArrayList<>();
+    private List<Socket> disClients = new ArrayList<>();
 
     private ServerListener listener;
     public interface ServerListener {
         void onHavingNewNode(Node node);
+        void nodeIsClosed(Node node);
+        void clientIsClosed(Client client);
     }
 
     public Server(int port, ServerListener listener) {
@@ -33,12 +39,13 @@ public class Server extends Thread implements ServerHandler.ServerHandleListener
         run();
     }
 
+    private int count = 1;
     public void run() {
         while (true) {
             try {
                 Socket newSocket = server.accept();
                 System.out.println(String.format("New client has port is %d connected.", newSocket.getPort()));
-                new ServerHandler(newSocket, this, nodes.size() + 1);
+                new ServerHandler(newSocket, this, count++);
                 System.out.println("New server initialized!");
             } catch (Exception e) {
                 e.printStackTrace();
@@ -55,11 +62,34 @@ public class Server extends Thread implements ServerHandler.ServerHandleListener
     }
 
     @Override
-    public void newNode(Socket socket, List<String> files) {
-        int id = nodes.size() + 1;
+    public void newNode(int id, Socket socket, List<String> files) {
         String name = String.format("NODE_%d_%d", id, files.size());
         Node newNode = new Node(id, name, socket, files);
         nodes.add(newNode);
         listener.onHavingNewNode(newNode);
+    }
+
+    @Override
+    public void closeSocket(SOCKET_TYPE type, int id) {
+        switch (type) {
+            case NODE:
+                for (Node node : nodes) {
+                    if (node.getId() == id) {
+                        nodes.remove(node);
+                        disNodes.add(node);
+                        listener.nodeIsClosed(node);
+                        break;
+                    }
+                }
+                break;
+            case CLIENT:
+
+                break;
+        }
+    }
+
+    @Override
+    public void newClient(Socket socket) {
+
     }
 }

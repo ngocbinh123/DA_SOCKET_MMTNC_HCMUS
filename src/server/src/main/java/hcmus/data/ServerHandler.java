@@ -4,6 +4,7 @@ import hcmus.Constant;
 import hcmus.SOCKET_TYPE;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
@@ -20,7 +21,9 @@ public class ServerHandler extends Thread {
 
     private ServerHandleListener listener;
     interface ServerHandleListener {
-        void newNode(Socket socket, List<String> files);
+        void newNode(int id, Socket socket, List<String> files);
+        void closeSocket(SOCKET_TYPE type, int id);
+        void newClient(Socket socket);
     }
 
     public ServerHandler(Socket client, ServerHandleListener listener, int newId) {
@@ -43,9 +46,16 @@ public class ServerHandler extends Thread {
             String received;
             do {
                 received = in.readLine();
+
+                if (received != null) {
+                    System.out.println("===> " + received);
+                }
+
                 if (received == null) {
 
-                }else if (received.contains(Constant.MSG_WHO_ARE_YOU)) {
+                } else if (received.equalsIgnoreCase(Constant.MSG_QUIT)) {
+                    closeHandle();
+                } else if (received.contains(Constant.MSG_WHO_ARE_YOU)) {
                     String[] paragraphs = received.split("  - files: ");
 
                     if (paragraphs[0].contains(SOCKET_TYPE.CLIENT.name())) {
@@ -64,11 +74,22 @@ public class ServerHandler extends Thread {
                             }
                         }
                     }
-                    listener.newNode(currentSocket, files);
+                    listener.newNode(newId, currentSocket, files);
                 }
             }while (received == null || !received.equalsIgnoreCase(Constant.MSG_QUIT));
 
         } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void closeHandle() {
+        try {
+            out.close();
+            in.close();
+            currentSocket.close();
+            listener.closeSocket(type, newId);
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }

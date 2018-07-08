@@ -2,14 +2,12 @@ package hcmus;
 
 
 
+import hcmus.data.Client;
 import hcmus.data.Node;
 import hcmus.data.NodeFile;
 import hcmus.data.Server;
-import java.util.ArrayList;
-import java.util.List;
 
 public class ServerController extends BaseController<ISocketServerContract.View> implements ISocketServerContract.Controller, Server.ServerListener {
-    private List<Node> mNodes = new ArrayList<>();
     private Server mServer;
     @Override
     public void startListenConnections() {
@@ -19,11 +17,20 @@ public class ServerController extends BaseController<ISocketServerContract.View>
 
     @Override
     public void onHavingNewNode(Node node) {
-        mNodes.add(node);
         getView().showNodeOnUI(node);
         for (String name : node.getFileNames()) {
             NodeFile file = new NodeFile(node, name);
             getView().showFileOnUI(file);
         }
+    }
+
+    @Override
+    public void nodeIsClosed(Node node) {
+        getView().closeNode(node);
+    }
+
+    @Override
+    public void clientIsClosed(Client client) {
+        getView().closeClient(client);
     }
 }

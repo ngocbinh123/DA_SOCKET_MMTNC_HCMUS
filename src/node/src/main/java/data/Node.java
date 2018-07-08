@@ -2,15 +2,13 @@ package data;
 
 import hcmus.Constant;
 import hcmus.SOCKET_TYPE;
-import rx.Observable;
-import rx.Scheduler;
 import utils.FileUtils;
 
 import java.io.*;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class Node {
     private Socket currentSocket;
@@ -18,14 +16,13 @@ public class Node {
     private String name;
     private List<File> files = new ArrayList<>();
     private NodeListener listener;
-
+    BufferedReader in; // send message to server
+    PrintWriter out;
     public interface NodeListener {
         void onConnectSuccessful(Node node);
     }
     public Node(String hostName, int ip, NodeListener listener) {
         this.listener = listener;
-        PrintWriter out; //  get message from server
-        BufferedReader in; // send message to server
         try {
             currentSocket = new Socket(hostName, ip);
             out = new PrintWriter(currentSocket.getOutputStream());
@@ -39,26 +36,17 @@ public class Node {
                         this.id = Integer.parseInt(sId);
                         List<String> files = getFiles(id);
                         this.name = String.format("NODE_%d_%d", id, files.size());
-                        String msg = "";
+                        StringBuilder msg = new StringBuilder();
                         for (String file : files) {
-                            msg+= file + ";";
+                            msg.append(file).append(";");
                         }
                         out.println(Constant.MSG_WHO_ARE_YOU + ": " + SOCKET_TYPE.NODE.name() + "  - files: " + msg);
                         out.flush();
                         listener.onConnectSuccessful(this);
                     }
                 }while (buffer == null);
-            } catch (UnknownHostException e) {
-                e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
-            } finally {
-                try {
-                    in.close();
-                    out.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -74,7 +62,7 @@ public class Node {
             files.addAll(FileUtils.getFilesByNodeId(id++));
         }
 
-        List<String> arr = new ArrayList<String>();
+        List<String> arr = new ArrayList<>();
         for (File file : files) {
             arr.add(file.getName());
         }
@@ -103,10 +91,13 @@ public class Node {
 
     public void close() {
         try {
-            PrintWriter out = new PrintWriter(currentSocket.getOutputStream());
             out.println(Constant.MSG_QUIT);
+            out.flush();
+            TimeUnit.SECONDS.sleep(5);
             currentSocket.close();
         } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }

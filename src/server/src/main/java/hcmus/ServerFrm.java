@@ -100,4 +100,28 @@ public class ServerFrm extends BaseFrm implements ISocketServerContract.View {
             }
         });
     }
+
+    private void removeFiles(int nodeId) {
+        for (int i =  mFilesModel.size() - 1; i >= 0; i--) {
+            if (mFilesModel.get(i).getNodeId() == nodeId) {
+                mFilesModel.remove(i);
+            }
+        }
+    }
+
+    @Override
+    public void closeNode(Node node) {
+        for (int i =0; i < mNodesModel.size(); i++) {
+            if (node.getId() == node.getId()) {
+                mNodesModel.remove(i);
+                removeFiles(node.getId());
+                break;
+            }
+        }
+    }
+
+    @Override
+    public void closeClient(Client client) {
+
+    }
 }

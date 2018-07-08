@@ -13,6 +13,9 @@ public class NodeFile {
         return name;
     }
 
+    public int getNodeId() {
+        return node.getId();
+    }
     public String getNodeName() {
         return node.getName();
     }
