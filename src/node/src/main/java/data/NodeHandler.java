@@ -4,15 +4,13 @@ package data;
 import hcmus.Constant;
 import hcmus.SOCKET_TYPE;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+
 
 public class NodeHandler {
     protected Socket currentSocket;
@@ -69,7 +67,7 @@ public class NodeHandler {
 
     private List<String> getFiles() {
         List<String> arr = new ArrayList<String>();
-        int size = new Random().nextInt(10);
+        int size = Math.max(new Random().nextInt(40), 20);
         for (int i = 1; i < size; i++) {
             arr.add(String.format("FILE_%d_%d_%d.pdf", currentSocket.getPort(), currentSocket.getLocalPort(), i));
         }

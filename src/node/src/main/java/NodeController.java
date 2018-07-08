@@ -1,91 +1,19 @@
 import data.Node;
-import data.NodeHandler;
 import hcmus.BaseController;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.net.Socket;
-import java.net.UnknownHostException;
-
-public class NodeController extends BaseController implements INodeContract.Controller {
-    Socket requestSocket;
-    ObjectOutputStream out;
-    ObjectInputStream in;
-    String message;
-
+public class NodeController extends BaseController<INodeContract.View> implements INodeContract.Controller, Node.NodeListener {
     private Node node;
     public void requestConnectToServer() {
-        node = new Node("localhost", SERVER_PORT);
-//        run();
-//        try {
-//            requestSocket = new Socket("localhost", SERVER_PORT);
-//            System.out.println(String.format("Connected to localhost in port %d", SERVER_PORT));
-//        }catch (IOException e) {
-//            e.printStackTrace();
-//        }
+        node = new Node("localhost", SERVER_PORT, this);
     }
 
-//    void run()
-//    {
-//        try{
-//            //1. creating a socket to connect to the server
-//            requestSocket = new Socket("localhost", SERVER_PORT);
-//            System.out.println("Connected to localhost in port 6789");
-//            //2. get Input and Output streams
-//            out = new ObjectOutputStream(requestSocket.getOutputStream());
-//            out.flush();
-//            in = new ObjectInputStream(requestSocket.getInputStream());
-//            //3: Communicating with the server
-//
-//            try{
-//                message = (String)in.readObject();
-//                System.out.println("server>" + message);
-//                sendMessage("Hi my server");
-//            }
-//            catch(ClassNotFoundException classNot){
-//                System.err.println("data received in unknown format");
-//            }
-////            do{
-////                try{
-////                    message = (String)in.readObject();
-////                    System.out.println("server>" + message);
-////                    sendMessage("Hi my server");
-////                    message = "bye";
-////                    sendMessage(message);
-////                }
-////                catch(ClassNotFoundException classNot){
-////                    System.err.println("data received in unknown format");
-////                }
-////            }while(!message.equals("bye1"));
-//        }
-//        catch(UnknownHostException unknownHost){
-//            System.err.println("You are trying to connect to an unknown host!");
-//        }
-//        catch(IOException ioException){
-//            ioException.printStackTrace();
-//        }
-//        finally{
-//            //4: Closing connection
-//            try{
-//                in.close();
-//                out.close();
-//                requestSocket.close();
-//            }
-//            catch(IOException ioException){
-//                ioException.printStackTrace();
-//            }
-//        }
-//    }
-//    void sendMessage(String msg)
-//    {
-//        try{
-//            out.writeObject(msg);
-//            out.flush();
-//            System.out.println("currentSocket>" + msg);
-//        }
-//        catch(IOException ioException){
-//            ioException.printStackTrace();
-//        }
-//    }
+    @Override
+    public void onConnectSuccessful(Node node) {
+        getView().updateDataOnUI(true, node);
+    }
+
+    @Override
+    public void disconnect() {
+        node.close();
+    }
 }

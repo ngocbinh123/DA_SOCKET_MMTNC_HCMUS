@@ -9,7 +9,7 @@ import java.net.UnknownHostException;
 public class Client {
     protected Socket client;
     protected BufferedReader in;
-
+    private String name;
     public Client(String hostName, int ip) {
         try {
             this.client = new Socket(hostName, ip);
@@ -23,5 +23,9 @@ public class Client {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public String getName() {
+        return name;
     }
 }

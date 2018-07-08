@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ServerHandler extends Thread {
+    private int newId;
     protected Socket currentSocket;
     protected PrintWriter out;
     protected BufferedReader in;
@@ -22,7 +23,8 @@ public class ServerHandler extends Thread {
         void newNode(Socket socket, List<String> files);
     }
 
-    public ServerHandler(Socket client, ServerHandleListener listener) {
+    public ServerHandler(Socket client, ServerHandleListener listener, int newId) {
+        this.newId = newId;
         this.currentSocket = client;
         this.listener = listener;
         this.start();
@@ -35,7 +37,7 @@ public class ServerHandler extends Thread {
             this.out = new PrintWriter(currentSocket.getOutputStream(), true);
 //            to use get message from client
             this.in = new BufferedReader(new InputStreamReader(currentSocket.getInputStream()));
-            this.out.println(Constant.MSG_WHO_ARE_YOU);
+            this.out.println(String.format("%s:%d", Constant.MSG_WHO_ARE_YOU, newId));
             out.flush();
 
             String received;

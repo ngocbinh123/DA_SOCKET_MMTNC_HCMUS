@@ -2,18 +2,28 @@ package data;
 
 import hcmus.Constant;
 import hcmus.SOCKET_TYPE;
+import rx.Observable;
+import rx.Scheduler;
+import utils.FileUtils;
 
 import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 public class Node {
-    protected Socket currentSocket;
+    private Socket currentSocket;
+    private int id;
+    private String name;
+    private List<File> files = new ArrayList<>();
+    private NodeListener listener;
 
-    public Node(String hostName, int ip) {
+    public interface NodeListener {
+        void onConnectSuccessful(Node node);
+    }
+    public Node(String hostName, int ip, NodeListener listener) {
+        this.listener = listener;
         PrintWriter out; //  get message from server
         BufferedReader in; // send message to server
         try {
@@ -21,20 +31,22 @@ public class Node {
             out = new PrintWriter(currentSocket.getOutputStream());
             in = new BufferedReader(new InputStreamReader(this.currentSocket.getInputStream()));
             try {
-                this.currentSocket = new Socket(hostName, ip);
-
-
                 String buffer;
                 do {
                     buffer = in.readLine();
-
-                    String msg = "";
-                    List<String> files = getFiles();
-                    for (String file : files) {
-                        msg+= file + ";";
+                    if (buffer != null && buffer.contains(Constant.MSG_WHO_ARE_YOU)) {
+                        String sId = buffer.replace(String.format("%s:", Constant.MSG_WHO_ARE_YOU),"").trim();
+                        this.id = Integer.parseInt(sId);
+                        List<String> files = getFiles(id);
+                        this.name = String.format("NODE_%d_%d", id, files.size());
+                        String msg = "";
+                        for (String file : files) {
+                            msg+= file + ";";
+                        }
+                        out.println(Constant.MSG_WHO_ARE_YOU + ": " + SOCKET_TYPE.NODE.name() + "  - files: " + msg);
+                        out.flush();
+                        listener.onConnectSuccessful(this);
                     }
-                    out.println(Constant.MSG_WHO_ARE_YOU + ": " + SOCKET_TYPE.NODE.name() + "  - files: " + msg);
-                    out.flush();
                 }while (buffer == null);
             } catch (UnknownHostException e) {
                 e.printStackTrace();
@@ -53,19 +65,49 @@ public class Node {
         }
     }
 
-
-
     private void printOnConsole(String msg, SOCKET_TYPE type) {
         System.out.println(String.format("%s: %s", type.name(), msg));
     }
 
-    private List<String> getFiles() {
-        List<String> arr = new ArrayList<String>();
-        int size = new Random().nextInt(10);
-        for (int i = 0; i < size + 1; i++) {
-            arr.add(String.format("FILE_%d_%d_%d.pdf", currentSocket.getPort(), currentSocket.getLocalPort(), i + 1));
+    private List<String> getFiles(int id) {
+        if (files.isEmpty()) {
+            files.addAll(FileUtils.getFilesByNodeId(id++));
         }
 
+        List<String> arr = new ArrayList<String>();
+        for (File file : files) {
+            arr.add(file.getName());
+        }
         return arr;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public List<File> getFiles() {
+        return files;
+    }
+
+    public int getLocalPort() {
+        return currentSocket.getLocalPort();
+    }
+
+    public int getFileSize() {
+        return files.size();
+    }
+
+    public void close() {
+        try {
+            PrintWriter out = new PrintWriter(currentSocket.getOutputStream());
+            out.println(Constant.MSG_QUIT);
+            currentSocket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
