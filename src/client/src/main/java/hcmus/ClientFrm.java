@@ -8,7 +8,6 @@ public class ClientFrm extends BaseFrm implements IClientContract.View {
     private JPanel panelMain;
     private JButton actStart;
     private ClientController mController;
-
     static void start() {
         JFrame frame = new JFrame("Client Form");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

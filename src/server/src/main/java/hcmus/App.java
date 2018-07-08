@@ -1,5 +1,8 @@
 package hcmus;
 
+import javax.swing.*;
+import java.awt.*;
+
 /**
  * Hello world!
  *
@@ -8,7 +11,20 @@ package hcmus;
 public class App
 {
     public static void main( String[] args ) {
-        System.out.println( "Start Server" );
-        ServerFrm.start();
+        System.out.println("Start Server");
+        final ServerFrm serverFrm = new ServerFrm();
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                JFrame frame = new JFrame("Server Form");
+                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+                frame.setContentPane(serverFrm.vPanelMain);
+                frame.setUndecorated(true);
+                frame.pack();
+                frame.setVisible(true);
+            }
+        });
+        serverFrm.startListenConnections();
     }
 }
