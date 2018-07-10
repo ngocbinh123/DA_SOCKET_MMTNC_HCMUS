@@ -3,7 +3,6 @@ package hcmus.data;
 import hcmus.BaseInfo;
 import hcmus.Constant;
 import hcmus.SOCKET_TYPE;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -13,7 +12,8 @@ import java.util.List;
 
 public class ServerHandler extends Thread {
     private BaseInfo info;
-    private int newId;
+    private int newNodeId;
+    private int newClientId;
     protected Socket currentSocket;
     protected PrintWriter out;
     protected BufferedReader in;
@@ -22,12 +22,14 @@ public class ServerHandler extends Thread {
     private ServerHandleListener listener;
     interface ServerHandleListener {
         void newNode(int id, Socket socket, List<String> files);
+        void newNode(Node node);
+        void newClient(Client client);
         void closeSocket(SOCKET_TYPE type, int id);
-        void newClient(Socket socket);
     }
 
-    public ServerHandler(Socket client, ServerHandleListener listener, int newId) {
-        this.newId = newId;
+    public ServerHandler(Socket client, ServerHandleListener listener, int newNodeId, int newClientId) {
+        this.newNodeId = newNodeId;
+        this.newClientId = newClientId;
         this.currentSocket = client;
         this.listener = listener;
         this.start();
@@ -40,7 +42,7 @@ public class ServerHandler extends Thread {
             this.out = new PrintWriter(currentSocket.getOutputStream(), true);
 //            to use get message from client
             this.in = new BufferedReader(new InputStreamReader(currentSocket.getInputStream()));
-            this.out.println(String.format("%s:%d", Constant.MSG_WHO_ARE_YOU, newId));
+            this.out.println(String.format("%s:%d-%d", Constant.MSG_WHO_ARE_YOU, newNodeId, newClientId));
             out.flush();
 
             String received;
@@ -58,8 +60,13 @@ public class ServerHandler extends Thread {
                 } else if (received.contains(Constant.MSG_WHO_ARE_YOU)) {
                     String json = received.replace(Constant.MSG_WHO_ARE_YOU + ": ", "");
                     info = BaseInfo.parseToObject(json);
-                    this.newId = info.getId();
-                    listener.newNode(newId, currentSocket, info.getFileNames());
+                    this.newNodeId = info.getId();
+                    if (info.getType() == SOCKET_TYPE.NODE) {
+                        listener.newNode(new Node(newNodeId, info.getName(), currentSocket, info.getFileNames()));
+                    }else {
+                        Client client = new Client(newNodeId, info.getName(), currentSocket);
+                        listener.newClient(client);
+                    }
                 }
             }while (received == null || !received.equalsIgnoreCase(Constant.MSG_QUIT));
 
@@ -73,7 +80,7 @@ public class ServerHandler extends Thread {
             out.close();
             in.close();
             currentSocket.close();
-            listener.closeSocket(type, newId);
+            listener.closeSocket(type, newNodeId);
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -10,14 +10,13 @@ import java.util.List;
 
 public class Server extends Thread implements ServerHandler.ServerHandleListener {
     private ServerSocket server;
-    private List<Node> nodes = new ArrayList<>();
-    private List<Socket> clients = new ArrayList<>();
-    private List<Node> disNodes = new ArrayList<>();
-    private List<Socket> disClients = new ArrayList<>();
+    private List<Node> mStoredNodes = new ArrayList<>();
+    private List<Client> mStoredClients = new ArrayList<>();
 
     private ServerListener listener;
     public interface ServerListener {
         void onHavingNewNode(Node node);
+        void onHavingNewClient(Client client);
         void nodeIsClosed(Node node);
         void clientIsClosed(Client client);
     }
@@ -39,13 +38,14 @@ public class Server extends Thread implements ServerHandler.ServerHandleListener
         run();
     }
 
-    private int count = 1;
+    private int mNodesIndex = 1;
+    private int mClientsIndex = 1;
     public void run() {
         while (true) {
             try {
                 Socket newSocket = server.accept();
                 System.out.println(String.format("New client has port is %d connected.", newSocket.getPort()));
-                new ServerHandler(newSocket, this, count++);
+                new ServerHandler(newSocket, this, mNodesIndex, mClientsIndex);
                 System.out.println("New server initialized!");
             } catch (Exception e) {
                 e.printStackTrace();
@@ -65,31 +65,45 @@ public class Server extends Thread implements ServerHandler.ServerHandleListener
     public void newNode(int id, Socket socket, List<String> files) {
         String name = String.format("NODE_%d_%d", id, files.size());
         Node newNode = new Node(id, name, socket, files);
-        nodes.add(newNode);
+        mStoredNodes.add(newNode);
         listener.onHavingNewNode(newNode);
+    }
+
+    @Override
+    public void newNode(Node node) {
+        mNodesIndex++;
+        mStoredNodes.add(node);
+        listener.onHavingNewNode(node);
+    }
+
+    @Override
+    public void newClient(Client client) {
+        mClientsIndex++;
+        mStoredClients.add(client);
+        listener.onHavingNewClient(client);
     }
 
     @Override
     public void closeSocket(SOCKET_TYPE type, int id) {
         switch (type) {
             case NODE:
-                for (Node node : nodes) {
+                for (Node node : mStoredNodes) {
                     if (node.getId() == id) {
-                        nodes.remove(node);
-                        disNodes.add(node);
+                        mStoredNodes.remove(node);
                         listener.nodeIsClosed(node);
                         break;
                     }
                 }
                 break;
             case CLIENT:
-
+                for (Client client : mStoredClients) {
+                    if (client.getId() == id) {
+                        mStoredClients.remove(client);
+                        listener.clientIsClosed(client);
+                        break;
+                    }
+                }
                 break;
         }
-    }
-
-    @Override
-    public void newClient(Socket socket) {
-
     }
 }

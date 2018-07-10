@@ -25,4 +25,7 @@
 	2. Nén lại và nộp trên Moodle
 
 * Members: 
-	- 1542006 Nguyễn Ngọc Bình
+	- 1542006	Nguyễn Ngọc Bình
+	- 1742074	Nguyễn Anh Trúc
+	- 1742001	Đặng Trần Tuấn Anh
+	- 1742047	Lê Ngọc Phụng

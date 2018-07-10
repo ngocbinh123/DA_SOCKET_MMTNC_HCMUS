@@ -57,6 +57,7 @@ public class ServerFrm extends BaseFrm implements ISocketServerContract.View {
         JList<Client> clientJList = new JList<>();
         clientJList.setCellRenderer(new ClientRender());
         clientJList.setModel(mClientsModel);
+
         JScrollPane clientScrollPanel = new JScrollPane(clientJList);
         panelLeftContainer.add(clientScrollPanel);
 
@@ -87,6 +88,16 @@ public class ServerFrm extends BaseFrm implements ISocketServerContract.View {
             @Override
             public void run() {
                 mNodesModel.addElement(node);
+            }
+        });
+    }
+
+    @Override
+    public void showClientOnUI(final Client client) {
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                mClientsModel.addElement(client);
             }
         });
     }

@@ -22,19 +22,29 @@ public class BaseInfo {
         this.fileNameList = fileNameList;
     }
 
+    public BaseInfo(int id, SOCKET_TYPE type) {
+        this(id, null, type);
+    }
+
     public BaseInfo(int id, List<File> files, SOCKET_TYPE type) {
         this.id = id;
-        this.name = String.format("NODE_%d_%d", id, files.size());
+        if (type == SOCKET_TYPE.NODE) {
+            this.name = String.format("NODE_%d_%d", id, files.size());
+        }else {
+            this.name = String.format("CLIENT_%d", id);
+        }
         this.type = type;
         this.files = files;
         this.fileNames = "";
 
-        List<String> arr = new ArrayList<>();
-        for (File file : files) {
-            arr.add(file.getName());
-            fileNames+= file.getName()+ ";";
+        if (files != null) {
+            List<String> arr = new ArrayList<>();
+            for (File file : files) {
+                arr.add(file.getName());
+                fileNames+= file.getName()+ ";";
+            }
+            this.fileNameList.addAll(arr);
         }
-        this.fileNameList.addAll(arr);
     }
 
     public int getId() {
@@ -53,6 +63,9 @@ public class BaseInfo {
         return files;
     }
 
+    public SOCKET_TYPE getType() {
+        return type;
+    }
     public String parseToString() {
         String json = String.format("id:%d - type:%s - name:%s - files:%s", this.id, type.name(), this.name, this.fileNames);
         return json;

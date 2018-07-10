@@ -25,6 +25,11 @@ public class ServerController extends BaseController<ISocketServerContract.View>
     }
 
     @Override
+    public void onHavingNewClient(Client client) {
+        getView().showClientOnUI(client);
+    }
+
+    @Override
     public void nodeIsClosed(Node node) {
         getView().closeNode(node);
     }

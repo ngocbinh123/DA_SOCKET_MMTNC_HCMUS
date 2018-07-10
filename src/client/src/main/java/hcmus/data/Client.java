@@ -1,41 +1,37 @@
-package data;
+package hcmus.data;
 
 import hcmus.BaseInfo;
 import hcmus.Constant;
+import hcmus.ISocketContract;
 import hcmus.SOCKET_TYPE;
-import utils.FileUtils;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.List;
 
-public class Node {
+public class Client implements ISocketContract {
     private Socket currentSocket;
-    private BaseInfo info;
-    private NodeListener listener;
     private String hostName;
     private int ip;
+    private ClientListener listener;
+    private BaseInfo info;
+
     BufferedReader in; // receive message from server
     PrintWriter out; // send message to server
-    public interface NodeListener {
-        void onConnectSuccessful(Node node);
+
+    public interface ClientListener {
+        void onConnectSuccessful(Client client);
     }
 
-    public Node(String hostName, int ip, NodeListener listener) {
+    public Client(String hostName, int ip, ClientListener listener) {
         this.hostName = hostName;
         this.ip = ip;
         this.listener = listener;
     }
 
-    public void reconnect() {
-        try {
-            currentSocket = new Socket(hostName, ip);
-            connect();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
+    @Override
     public void connect() {
         try {
             currentSocket = new Socket(hostName, ip);
@@ -48,9 +44,9 @@ public class Node {
                     if (buffer != null && buffer.contains(Constant.MSG_WHO_ARE_YOU)) {
                         if (info == null) {
                             String sId = buffer.replace(String.format("%s:", Constant.MSG_WHO_ARE_YOU),"").trim();
-                            sId = sId.split("-")[0];
+                            sId = sId.split("-")[1];
                             int id = Integer.parseInt(sId);
-                            info = new BaseInfo(id, FileUtils.getFilesByNodeId(id++), SOCKET_TYPE.NODE);
+                            info = new BaseInfo(id, SOCKET_TYPE.CLIENT);
                         }
 
                         out.println(Constant.MSG_WHO_ARE_YOU + ": " + info.parseToString());
@@ -66,24 +62,20 @@ public class Node {
         }
     }
 
+    @Override
+    public void reconnect() {
+    }
+
+    @Override
+    public void disconnect() {
+
+    }
+
     public String getName() {
         return info.getName();
     }
 
-    public List<File> getFiles() {
-        return info.getFiles();
-    }
-
     public int getLocalPort() {
         return currentSocket.getLocalPort();
-    }
-
-    public int getFileSize() {
-        return info.getFiles().size();
-    }
-
-    public void close() {
-        out.println(Constant.MSG_QUIT);
-        out.flush();
     }
 }
