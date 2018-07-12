@@ -59,6 +59,14 @@ public class BaseInfo {
         return fileNameList;
     }
 
+    public void setFileNames(List<String> newFileNames) {
+        fileNameList = newFileNames;
+    }
+
+    public void addFilesNames(List<String> newFileNames) {
+        fileNameList.addAll(newFileNames);
+    }
+
     public List<File> getFiles() {
         return files;
     }
@@ -82,8 +90,15 @@ public class BaseInfo {
 
         String nodeName = paragraphs[2].replace("name:", "").trim();
 
-        List<String> files = new ArrayList<>();
         String sFile = paragraphs[3].replace("files:", "").trim();
+        List<String> files = getFilesFromJson(sFile);
+
+        BaseInfo info = new BaseInfo(id, type, nodeName, files);
+        return info;
+    }
+
+    public static List<String> getFilesFromJson(String sFile) {
+        List<String> files = new ArrayList<>();
         if (sFile.contains(";")) {
             String[] names = sFile.trim().split(";");
             for (String name : names) {
@@ -93,7 +108,6 @@ public class BaseInfo {
             }
         }
 
-        BaseInfo info = new BaseInfo(id, type, nodeName, files);
-        return info;
+        return files;
     }
 }

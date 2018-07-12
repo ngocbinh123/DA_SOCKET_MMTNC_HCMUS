@@ -2,6 +2,7 @@ package hcmus.data;
 
 import hcmus.SOCKET_TYPE;
 
+import java.awt.*;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -62,14 +63,6 @@ public class Server extends Thread implements ServerHandler.ServerHandleListener
     }
 
     @Override
-    public void newNode(int id, Socket socket, List<String> files) {
-        String name = String.format("NODE_%d_%d", id, files.size());
-        Node newNode = new Node(id, name, socket, files);
-        mStoredNodes.add(newNode);
-        listener.onHavingNewNode(newNode);
-    }
-
-    @Override
     public void newNode(Node node) {
         mNodesIndex++;
         mStoredNodes.add(node);
@@ -77,10 +70,16 @@ public class Server extends Thread implements ServerHandler.ServerHandleListener
     }
 
     @Override
-    public void newClient(Client client) {
+    public void newClient(final Client client) {
         mClientsIndex++;
         mStoredClients.add(client);
         listener.onHavingNewClient(client);
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                new SendFileToClient(client, mStoredNodes);
+            }
+        });
     }
 
     @Override

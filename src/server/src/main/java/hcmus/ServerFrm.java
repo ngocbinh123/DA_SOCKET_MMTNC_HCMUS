@@ -14,18 +14,12 @@ import java.awt.*;
 public class ServerFrm extends BaseFrm implements ISocketServerContract.View {
     private ServerController mController;
     public JPanel vPanelMain;
-
-    static ServerFrm start() {
-        JFrame frame = new JFrame("Server Form");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-        ServerFrm frm = new ServerFrm();
-        frame.setContentPane(frm.vPanelMain);
-        frame.setUndecorated(true);
-        frame.pack();
-        frame.setVisible(true);
-        return frm;
-    }
+    private JPanel vPanelBody;
+    private JPanel vPanelFooter;
+    private JList vFilesList;
+    private DefaultListModel<NodeFile> mFilesModel;
+    private DefaultListModel<Node> mNodesModel;
+    private DefaultListModel<Client> mClientsModel;
 
     public ServerFrm() {
         super();
@@ -37,12 +31,7 @@ public class ServerFrm extends BaseFrm implements ISocketServerContract.View {
         mController.startListenConnections();
     }
 
-    private JPanel vPanelBody;
-    private JPanel vPanelFooter;
-    private JList vFilesList;
-    private DefaultListModel<NodeFile> mFilesModel;
-    private DefaultListModel<Node> mNodesModel;
-    private DefaultListModel<Client> mClientsModel;
+
     private void createUIComponents() {
         vPanelBody = new JPanel(new GridLayout(0,2));
         vPanelFooter = new JPanel(new GridLayout(0,1));
@@ -133,6 +122,5 @@ public class ServerFrm extends BaseFrm implements ISocketServerContract.View {
 
     @Override
     public void closeClient(Client client) {
-
     }
 }

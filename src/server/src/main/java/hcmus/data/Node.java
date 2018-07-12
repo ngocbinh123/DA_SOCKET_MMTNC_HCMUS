@@ -31,4 +31,15 @@ public class Node {
     public List<String> getFileNames() {
         return fileNames;
     }
+
+    public String getFileNamesJson() {
+        String json="";
+        for (int i = 0; i < fileNames.size(); i++) {
+            json = json + fileNames.get(i);
+            if (i < fileNames.size() -1) {
+                json+=";";
+            }
+        }
+        return json;
+    }
 }

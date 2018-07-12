@@ -14,7 +14,7 @@ public class Node {
     private BaseInfo info;
     private NodeListener listener;
     private String hostName;
-    private int ip;
+    private int serverPort;
     BufferedReader in; // receive message from server
     PrintWriter out; // send message to server
     public interface NodeListener {
@@ -23,13 +23,13 @@ public class Node {
 
     public Node(String hostName, int ip, NodeListener listener) {
         this.hostName = hostName;
-        this.ip = ip;
+        this.serverPort = ip;
         this.listener = listener;
     }
 
     public void reconnect() {
         try {
-            currentSocket = new Socket(hostName, ip);
+            currentSocket = new Socket(hostName, serverPort);
             connect();
         } catch (IOException e) {
             e.printStackTrace();
@@ -38,14 +38,16 @@ public class Node {
 
     public void connect() {
         try {
-            currentSocket = new Socket(hostName, ip);
+            currentSocket = new Socket(hostName, serverPort);
             out = new PrintWriter(currentSocket.getOutputStream());
             in = new BufferedReader(new InputStreamReader(this.currentSocket.getInputStream()));
             try {
                 String buffer;
                 do {
                     buffer = in.readLine();
-                    if (buffer != null && buffer.contains(Constant.MSG_WHO_ARE_YOU)) {
+                    if (buffer == null) {
+
+                    } else if (buffer.contains(Constant.MSG_WHO_ARE_YOU)) {
                         if (info == null) {
                             String sId = buffer.replace(String.format("%s:", Constant.MSG_WHO_ARE_YOU),"").trim();
                             sId = sId.split("-")[0];
@@ -85,5 +87,13 @@ public class Node {
     public void close() {
         out.println(Constant.MSG_QUIT);
         out.flush();
+    }
+
+    public int getNodePort() {
+        return currentSocket.getPort();
+    }
+
+    public String getHostName() {
+        return hostName;
     }
 }

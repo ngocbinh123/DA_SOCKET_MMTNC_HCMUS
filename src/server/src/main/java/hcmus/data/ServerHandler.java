@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.List;
 
 public class ServerHandler extends Thread {
     private BaseInfo info;
@@ -21,7 +20,6 @@ public class ServerHandler extends Thread {
 
     private ServerHandleListener listener;
     interface ServerHandleListener {
-        void newNode(int id, Socket socket, List<String> files);
         void newNode(Node node);
         void newClient(Client client);
         void closeSocket(SOCKET_TYPE type, int id);
@@ -66,6 +64,7 @@ public class ServerHandler extends Thread {
                     }else {
                         Client client = new Client(newNodeId, info.getName(), currentSocket);
                         listener.newClient(client);
+                        return;
                     }
                 }
             }while (received == null || !received.equalsIgnoreCase(Constant.MSG_QUIT));
