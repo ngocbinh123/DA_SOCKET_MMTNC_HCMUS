@@ -1,96 +1,79 @@
 package data;
 
+import hcmus.BaseInfo;
 import hcmus.Constant;
 import hcmus.SOCKET_TYPE;
-import rx.Observable;
-import rx.Scheduler;
 import utils.FileUtils;
 
 import java.io.*;
 import java.net.Socket;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class Node {
     private Socket currentSocket;
-    private int id;
-    private String name;
-    private List<File> files = new ArrayList<>();
+    private BaseInfo info;
     private NodeListener listener;
-
+    private String hostName;
+    private int serverPort;
+    BufferedReader in; // receive message from server
+    PrintWriter out; // send message to server
     public interface NodeListener {
         void onConnectSuccessful(Node node);
     }
+
     public Node(String hostName, int ip, NodeListener listener) {
+        this.hostName = hostName;
+        this.serverPort = ip;
         this.listener = listener;
-        PrintWriter out; //  get message from server
-        BufferedReader in; // send message to server
+    }
+
+    public void reconnect() {
         try {
-            currentSocket = new Socket(hostName, ip);
+            currentSocket = new Socket(hostName, serverPort);
+            connect();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void connect() {
+        try {
+            currentSocket = new Socket(hostName, serverPort);
             out = new PrintWriter(currentSocket.getOutputStream());
             in = new BufferedReader(new InputStreamReader(this.currentSocket.getInputStream()));
             try {
                 String buffer;
                 do {
                     buffer = in.readLine();
-                    if (buffer != null && buffer.contains(Constant.MSG_WHO_ARE_YOU)) {
-                        String sId = buffer.replace(String.format("%s:", Constant.MSG_WHO_ARE_YOU),"").trim();
-                        this.id = Integer.parseInt(sId);
-                        List<String> files = getFiles(id);
-                        this.name = String.format("NODE_%d_%d", id, files.size());
-                        String msg = "";
-                        for (String file : files) {
-                            msg+= file + ";";
+                    if (buffer == null) {
+
+                    } else if (buffer.contains(Constant.MSG_WHO_ARE_YOU)) {
+                        if (info == null) {
+                            String sId = buffer.replace(String.format("%s:", Constant.MSG_WHO_ARE_YOU),"").trim();
+                            sId = sId.split("-")[0];
+                            int id = Integer.parseInt(sId);
+                            info = new BaseInfo(id, FileUtils.getFilesByNodeId(id++), SOCKET_TYPE.NODE);
                         }
-                        out.println(Constant.MSG_WHO_ARE_YOU + ": " + SOCKET_TYPE.NODE.name() + "  - files: " + msg);
+
+                        out.println(Constant.MSG_WHO_ARE_YOU + ": " + info.parseToString());
                         out.flush();
                         listener.onConnectSuccessful(this);
                     }
                 }while (buffer == null);
-            } catch (UnknownHostException e) {
-                e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
-            } finally {
-                try {
-                    in.close();
-                    out.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void printOnConsole(String msg, SOCKET_TYPE type) {
-        System.out.println(String.format("%s: %s", type.name(), msg));
-    }
-
-    private List<String> getFiles(int id) {
-        if (files.isEmpty()) {
-            files.addAll(FileUtils.getFilesByNodeId(id++));
-        }
-
-        List<String> arr = new ArrayList<String>();
-        for (File file : files) {
-            arr.add(file.getName());
-        }
-        return arr;
-    }
-
-    public int getId() {
-        return id;
-    }
-
     public String getName() {
-        return name;
+        return info.getName();
     }
 
     public List<File> getFiles() {
-        return files;
+        return info.getFiles();
     }
 
     public int getLocalPort() {
@@ -98,16 +81,19 @@ public class Node {
     }
 
     public int getFileSize() {
-        return files.size();
+        return info.getFiles().size();
     }
 
     public void close() {
-        try {
-            PrintWriter out = new PrintWriter(currentSocket.getOutputStream());
-            out.println(Constant.MSG_QUIT);
-            currentSocket.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        out.println(Constant.MSG_QUIT);
+        out.flush();
+    }
+
+    public int getNodePort() {
+        return currentSocket.getPort();
+    }
+
+    public String getHostName() {
+        return hostName;
     }
 }

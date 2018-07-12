@@ -1,30 +1,33 @@
 package hcmus.data;
 
+import hcmus.BaseInfo;
 import hcmus.Constant;
 import hcmus.SOCKET_TYPE;
-
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
 
 public class ServerHandler extends Thread {
-    private int newId;
+    private BaseInfo info;
+    private int newNodeId;
+    private int newClientId;
     protected Socket currentSocket;
     protected PrintWriter out;
     protected BufferedReader in;
     private SOCKET_TYPE type = SOCKET_TYPE.NODE;
-    private List<String> files = new ArrayList<>();
 
     private ServerHandleListener listener;
     interface ServerHandleListener {
-        void newNode(Socket socket, List<String> files);
+        void newNode(Node node);
+        void newClient(Client client);
+        void closeSocket(SOCKET_TYPE type, int id);
     }
 
-    public ServerHandler(Socket client, ServerHandleListener listener, int newId) {
-        this.newId = newId;
+    public ServerHandler(Socket client, ServerHandleListener listener, int newNodeId, int newClientId) {
+        this.newNodeId = newNodeId;
+        this.newClientId = newClientId;
         this.currentSocket = client;
         this.listener = listener;
         this.start();
@@ -37,38 +40,47 @@ public class ServerHandler extends Thread {
             this.out = new PrintWriter(currentSocket.getOutputStream(), true);
 //            to use get message from client
             this.in = new BufferedReader(new InputStreamReader(currentSocket.getInputStream()));
-            this.out.println(String.format("%s:%d", Constant.MSG_WHO_ARE_YOU, newId));
+            this.out.println(String.format("%s:%d-%d", Constant.MSG_WHO_ARE_YOU, newNodeId, newClientId));
             out.flush();
 
             String received;
             do {
                 received = in.readLine();
+
+                if (received != null) {
+                    System.out.println("===> " + received);
+                }
+
                 if (received == null) {
 
-                }else if (received.contains(Constant.MSG_WHO_ARE_YOU)) {
-                    String[] paragraphs = received.split("  - files: ");
-
-                    if (paragraphs[0].contains(SOCKET_TYPE.CLIENT.name())) {
-                        received = received.replace(SOCKET_TYPE.CLIENT.name(), "").trim();
-                        type = SOCKET_TYPE.CLIENT;
+                } else if (received.equalsIgnoreCase(Constant.MSG_QUIT)) {
+                    closeHandle();
+                } else if (received.contains(Constant.MSG_WHO_ARE_YOU)) {
+                    String json = received.replace(Constant.MSG_WHO_ARE_YOU + ": ", "");
+                    info = BaseInfo.parseToObject(json);
+                    this.newNodeId = info.getId();
+                    if (info.getType() == SOCKET_TYPE.NODE) {
+                        listener.newNode(new Node(newNodeId, info.getName(), currentSocket, info.getFileNames()));
                     }else {
-                        type = SOCKET_TYPE.NODE;
+                        Client client = new Client(newNodeId, info.getName(), currentSocket);
+                        listener.newClient(client);
+                        return;
                     }
-
-                    if (paragraphs[1].contains(";")) {
-                        String[] names = paragraphs[1].trim().split(";");
-                        for (String name : names) {
-                            if (name != "") {
-                                files.add(name);
-                                System.out.println(String.format("%d - %s - %s ", files.size(), type.name(), name));
-                            }
-                        }
-                    }
-                    listener.newNode(currentSocket, files);
                 }
             }while (received == null || !received.equalsIgnoreCase(Constant.MSG_QUIT));
 
         } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void closeHandle() {
+        try {
+            out.close();
+            in.close();
+            currentSocket.close();
+            listener.closeSocket(type, newNodeId);
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }

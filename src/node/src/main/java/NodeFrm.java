@@ -67,6 +67,7 @@ public class NodeFrm extends BaseFrm implements INodeContract.View {
         vActConnect.addActionListener(e -> {
             if (vActConnect.getText().equalsIgnoreCase(SOCKET_STATUS.DISCONNECT.getValue())) {
                 mController.disconnect();
+                vActConnect.setText("Connect To Server");
             }else {
                 mController.requestConnectToServer();
             }
