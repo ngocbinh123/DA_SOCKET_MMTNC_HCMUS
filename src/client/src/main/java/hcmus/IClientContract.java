@@ -16,6 +16,6 @@ public interface IClientContract {
     interface Controller {
         void requestConnectToServer();
         void disconnect();
-        void requestDownload(int index, NodeFile file);
+        void requestDownload(int index, NodeFile file, String storageDir);
     }
 }

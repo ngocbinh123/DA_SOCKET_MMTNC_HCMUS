@@ -5,13 +5,12 @@ import hcmus.RUDP.UDPReceiver;
 import hcmus.RUDP.UDPSender;
 
 import java.io.File;
-import static hcmus.Constant.FOLDER_RECEICE;
 
 public class NodeController extends BaseController<INodeContract.View> implements INodeContract.Controller, Node.NodeListener {
     private Node node;
     public void requestConnectToServer() {
         if (node == null) {
-            node = new Node("localhost", SERVER_PORT, this);
+            node = new Node(SERVER_PORT, this);
         }else {
             node.reconnect();
         }
@@ -39,9 +38,9 @@ public class NodeController extends BaseController<INodeContract.View> implement
                     if (message.contains(Constant.MSG_PLS_SEND_YOUR_FILES)) {
                         message = message.replace(Constant.MSG_PLS_SEND_YOUR_FILES+":","");
                         for (File f:node.getFiles()) {
-                            if (f.getName().equals(message)) {
+                            if (message.contains(f.getName())) {
                                 UDPSender sender = new UDPSender(node.getLocalPort(), Constant.LOCAL_HOST_NAME);
-                                sender.sendFile(f, FOLDER_RECEICE);
+                                sender.sendFile(f);
                                 return;
                             }
                         }

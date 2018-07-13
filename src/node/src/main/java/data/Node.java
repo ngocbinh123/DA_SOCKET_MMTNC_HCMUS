@@ -2,14 +2,14 @@ package data;
 
 import hcmus.BaseInfo;
 import hcmus.Constant;
+import hcmus.ISocketContract;
 import hcmus.SOCKET_TYPE;
 import utils.FileUtils;
-
 import java.io.*;
 import java.net.Socket;
 import java.util.List;
 
-public class Node {
+public class Node implements ISocketContract {
     private Socket currentSocket;
     private BaseInfo info;
     private NodeListener listener;
@@ -21,9 +21,13 @@ public class Node {
         void onConnectSuccessful(Node node);
     }
 
-    public Node(String hostName, int ip, NodeListener listener) {
+    public Node(int serverPort, NodeListener listener) {
+        this(Constant.LOCAL_HOST_NAME, serverPort, listener);
+    }
+
+    public Node(String hostName, int port, NodeListener listener) {
         this.hostName = hostName;
-        this.serverPort = ip;
+        this.serverPort = port;
         this.listener = listener;
     }
 
@@ -34,6 +38,11 @@ public class Node {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void disconnect() {
+
     }
 
     public void connect() {
@@ -87,13 +96,5 @@ public class Node {
     public void close() {
         out.println(Constant.MSG_QUIT);
         out.flush();
-    }
-
-    public int getNodePort() {
-        return currentSocket.getPort();
-    }
-
-    public String getHostName() {
-        return hostName;
     }
 }

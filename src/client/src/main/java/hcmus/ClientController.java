@@ -4,7 +4,6 @@ import hcmus.RUDP.UDPReceiver;
 import hcmus.RUDP.UDPSender;
 import hcmus.data.Client;
 import hcmus.data.NodeFile;
-
 import java.awt.*;
 import java.io.File;
 import java.util.List;
@@ -16,7 +15,7 @@ public class ClientController extends BaseController<IClientContract.View> imple
     @Override
     public void requestConnectToServer() {
         if (client == null) {
-            client = new Client(LOCAL_HOST_NAME, SERVER_PORT, this);
+            client = new Client(SERVER_PORT, this);
             client.connect();
         }else {
             client.reconnect();
@@ -25,13 +24,13 @@ public class ClientController extends BaseController<IClientContract.View> imple
 
     @Override
     public void disconnect() {
-
+        client.disconnect();
     }
 
     @Override
-    public void requestDownload(int index, NodeFile nodeFile) {
+    public void requestDownload(int index, NodeFile nodeFile, String storagePath) {
         new Thread(()-> {
-            UDPReceiver receiver = new UDPReceiver(nodeFile.getNodePort());
+            UDPReceiver receiver = new UDPReceiver(nodeFile.getNodePort(), storagePath);
             receiver.startListen(new UDPReceiver.ReceiveListener() {
                 @Override
                 public void onReceived(File file) {

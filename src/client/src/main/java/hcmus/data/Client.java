@@ -27,9 +27,13 @@ public class Client implements ISocketContract {
         void receiveFilesFromServer(List<NodeFile> files);
     }
 
-    public Client(String hostName, int ip, ClientListener listener) {
+    public Client(int port, ClientListener listener) {
+        this(Constant.LOCAL_HOST_NAME, port, listener);
+    }
+
+    public Client(String hostName, int port, ClientListener listener) {
         this.hostName = hostName;
-        this.ip = ip;
+        this.ip = port;
         this.listener = listener;
     }
 
@@ -48,10 +52,26 @@ public class Client implements ISocketContract {
         }
     }
 
+    @Override
+    public void reconnect() {
+        try {
+            currentSocket = new Socket(hostName, ip);
+            connect();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void disconnect() {
+        out.println(Constant.MSG_QUIT);
+        out.flush();
+    }
+
     public void startListen() {
         new Thread(()-> {
             try {
-                String buffer = null;
+                String buffer;
                 do {
                     String message = in.readLine();
                     buffer = message;
@@ -104,43 +124,9 @@ public class Client implements ISocketContract {
                     listener.receiveFilesFromServer(files);
                   }
             }while (!isCompleted);
-//            while (true) {
-//                message = in.readLine();
-//                if (message != null && message.contains("{") && message.contains("}")) {
-//                    message = message.replace("{", "");
-//                    message = message.replace("}", "");
-//                    nodesJson.add(message);
-//                }else if (nodesJson.size() > 0 && message == null) {
-//                    for (String json : nodesJson) {
-//                        String[] pars = json.split(",");
-//                        String id= pars[0].replace("id:","").trim();
-//                        String ip= pars[1].replace("ip:","").trim();
-//                        String port= pars[2].replace("port:","").trim();
-//                        String localPort= pars[3].replace("localPort:","").trim();
-//                        String fileNamesJson= pars[4].replace("files:","").trim();
-//                        List<String> fileNames = BaseInfo.getFilesFromJson(fileNamesJson);
-//
-//                        for (String name: fileNames) {
-//                            NodeFile f = new NodeFile(name, id, ip, port, localPort);
-//                            files.add(f);
-//                        }
-//                    }
-//                    listener.receiveFilesFromServer(files);
-//                    return;
-//                }
-//            }
         }catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    @Override
-    public void reconnect() {
-    }
-
-    @Override
-    public void disconnect() {
-
     }
 
     public String getName() {

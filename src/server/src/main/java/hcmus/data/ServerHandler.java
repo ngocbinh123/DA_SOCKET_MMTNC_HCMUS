@@ -46,7 +46,6 @@ public class ServerHandler extends Thread {
             String received;
             do {
                 received = in.readLine();
-
                 if (received != null) {
                     System.out.println("===> " + received);
                 }

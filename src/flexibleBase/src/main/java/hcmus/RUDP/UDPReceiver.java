@@ -1,7 +1,6 @@
 package hcmus.RUDP;
 
 import hcmus.Constant;
-
 import java.io.*;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -11,32 +10,22 @@ import java.net.SocketException;
 public class UDPReceiver {
     private static final int PIECES_OF_FILE_SIZE = 1024 * 32;
     private DatagramSocket serverSocket;
-    private int port = 6677;
+    private int mPort;
+    private String mStoragePath = Constant.STORAGE_DIR;
 
-    public static void main(String[] args) {
-        UDPReceiver udpServer = new UDPReceiver(Constant.UDP_PORT);
-        udpServer.listeningMessage(new ReceiveListenMessage() {
-            @Override
-            public void onReceived(String message) {
-
-            }
-
-            @Override
-            public void onError(String err) {
-
-            }
-        });
-//        udpServer.startListen();
+    public UDPReceiver(int listenPort) {
+        this.mPort = listenPort;
     }
 
-    public UDPReceiver(int port) {
-        this.port = port;
+    public UDPReceiver(int port, String storagePath) {
+        this.mPort = port;
+        this.mStoragePath = storagePath;
     }
 
     public void startListen(ReceiveListener listener) {
         try {
-            serverSocket = new DatagramSocket(port);
-            System.out.println("Server is opened on port " + port);
+            serverSocket = new DatagramSocket(mPort);
+            System.out.println("Server is opened on port " + mPort);
             listening(listener);
         } catch (SocketException e) {
             e.printStackTrace();
@@ -56,9 +45,9 @@ public class UDPReceiver {
 
     public void listeningMessage(ReceiveListenMessage listen) {
         try {
-            serverSocket = new DatagramSocket(port);
-            System.out.println("Server is opened on port " + port);
-            byte[] receiveData = new byte[1024];
+            serverSocket = new DatagramSocket(mPort);
+            System.out.println("Server is opened on port " + mPort);
+            byte[] receiveData = new byte[Constant.MAX_BYTE];
             while (true) {
                 DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
                 serverSocket.receive(receivePacket);
@@ -66,9 +55,6 @@ public class UDPReceiver {
                 System.out.println("RECEIVED: " + sentence);
                 listen.onReceived(sentence.trim());
             }
-        } catch (SocketException e) {
-            e.printStackTrace();
-            listen.onError(e.getMessage());
         } catch (IOException e) {
             e.printStackTrace();
             listen.onError(e.getMessage());
@@ -79,7 +65,8 @@ public class UDPReceiver {
         void onReceived(File file);
         void failure(String err);
     }
-    public void receiveFile(final ReceiveListener listener) {
+
+    private void receiveFile(final ReceiveListener listener) {
         byte[] receiveData = new byte[PIECES_OF_FILE_SIZE];
         DatagramPacket receivePacket;
 
@@ -100,18 +87,16 @@ public class UDPReceiver {
             }
             // get file content
             System.out.println("Receiving file...");
-            File fileReceive = new File(fileInfo.getDestinationDirectory()
-                    + fileInfo.getFilename());
+            File fileReceive = new File(mStoragePath);
             BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(fileReceive));
             // write pieces of file
             for (int i = 0; i < (fileInfo.getPiecesOfFile() - 1); i++) {
-                receivePacket = new DatagramPacket(receiveData, receiveData.length, inetAddress, port);
+                receivePacket = new DatagramPacket(receiveData, receiveData.length, inetAddress, mPort);
                 serverSocket.receive(receivePacket);
                 bos.write(receiveData, 0, PIECES_OF_FILE_SIZE);
             }
             // write last bytes of file
-            receivePacket = new DatagramPacket(receiveData, receiveData.length,
-                    inetAddress, port);
+            receivePacket = new DatagramPacket(receiveData, receiveData.length, inetAddress, mPort);
             serverSocket.receive(receivePacket);
             bos.write(receiveData, 0, fileInfo.getLastByteLength());
             bos.flush();
@@ -119,10 +104,7 @@ public class UDPReceiver {
             // close stream
             bos.close();
             listener.onReceived(fileReceive);
-        } catch (IOException e) {
-            e.printStackTrace();
-            listener.failure(e.getMessage());
-        } catch (ClassNotFoundException e) {
+        } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
             listener.failure(e.getMessage());
         }

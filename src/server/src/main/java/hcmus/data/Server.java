@@ -13,8 +13,10 @@ public class Server extends Thread implements ServerHandler.ServerHandleListener
     private ServerSocket server;
     private List<Node> mStoredNodes = new ArrayList<>();
     private List<Client> mStoredClients = new ArrayList<>();
-
+    private int mNodesIndex = 1;
+    private int mClientsIndex = 1;
     private ServerListener listener;
+
     public interface ServerListener {
         void onHavingNewNode(Node node);
         void onHavingNewClient(Client client);
@@ -27,7 +29,6 @@ public class Server extends Thread implements ServerHandler.ServerHandleListener
         try {
             this.server = new ServerSocket(port);
             System.out.println("New server initialized!");
-            this.start();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -39,8 +40,6 @@ public class Server extends Thread implements ServerHandler.ServerHandleListener
         run();
     }
 
-    private int mNodesIndex = 1;
-    private int mClientsIndex = 1;
     public void run() {
         while (true) {
             try {

@@ -9,6 +9,7 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
+import java.io.File;
 import java.util.Comparator;
 import java.util.List;
 
@@ -76,6 +77,7 @@ public class ClientFrm extends BaseFrm implements IClientContract.View, ListSele
             if (vActConnect.getText().equalsIgnoreCase(SOCKET_STATUS.DISCONNECT.getValue())) {
                 mController.disconnect();
                 vActConnect.setText("Connect To Server");
+                mFileNamesModel.clear();
             }else {
                 mController.requestConnectToServer();
             }
@@ -90,13 +92,8 @@ public class ClientFrm extends BaseFrm implements IClientContract.View, ListSele
         EventQueue.invokeLater(() -> {
             vLblStatus.setText("Status: " + SOCKET_STATUS.CONNECT.getValue());
             vActConnect.setText(SOCKET_STATUS.DISCONNECT.getValue());
-//            vLblFileSize.setText(String.format("Files: %d", node.getFileSize()));
-//            for (File file : node.getFiles()) {
-//                mFileNamesModel.addElement(file.getName());
-//            }
             vLblNodeName.setText("Name: " + client.getName());
             vLblLocalPort.setText("Local port: " + String.valueOf(client.getLocalPort()));
-//            vLblFileSize.setText(String.format("Files: %d", node.getFileSize()));
         });
     }
 
@@ -121,23 +118,36 @@ public class ClientFrm extends BaseFrm implements IClientContract.View, ListSele
 
     @Override
     public void valueChanged(ListSelectionEvent listSelectionEvent) {
-        System.out.println("First index: " + listSelectionEvent.getFirstIndex());
-        System.out.println(", Last index: " + listSelectionEvent.getLastIndex());
         boolean adjust = listSelectionEvent.getValueIsAdjusting();
-        System.out.println(", Adjusting? " + adjust);
         if (!adjust) {
             JList list = (JList) listSelectionEvent.getSource();
             int selections[] = list.getSelectedIndices();
             Object selectionValues[] = list.getSelectedValues();
             for (int i = 0, n = selections.length; i < n; i++) {
-                if (i == 0) {
-                    System.out.println(" Selections: ");
-                }
-                System.out.println(selections[i] + "/" + selectionValues[i] + " ");
-
                 NodeFile selected = (NodeFile) selectionValues[i];
-                mController.requestDownload(selections[i], selected);
+                chooseDir(selections[i], selected);
             }
+        }
+    }
+
+    private File storedDir = null;
+    private void chooseDir(int position, NodeFile nodeFile) {
+        // parent component of the dialog
+        JFrame parentFrame = new JFrame();
+
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Save as");
+        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+
+        String path = String.format("%s/%s", storedDir == null ? "": storedDir.getAbsolutePath(), nodeFile.getName());
+        fileChooser.setSelectedFile(new File(path));
+        fileChooser.setSelectedFile(new File(path));
+        int userSelection = fileChooser.showSaveDialog(parentFrame);
+
+        if (userSelection == JFileChooser.APPROVE_OPTION) {
+            File fileToSave = fileChooser.getSelectedFile();
+            storedDir = fileToSave.getParentFile();
+            mController.requestDownload(position, nodeFile, fileToSave.getAbsolutePath());
         }
     }
 }
