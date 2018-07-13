@@ -98,11 +98,16 @@ public class ClientFrm extends BaseFrm implements IClientContract.View, ListSele
     private ArrayList<NodeFile> fileList = new ArrayList<>();
     @Override
     public void showFilesOnUI(List<NodeFile> ls) {
-        fileList.addAll(ls);
-        loadFileOnListView();
+        EventQueue.invokeLater(() -> {
+            System.out.println(String.format("ls: %d", ls.size()));
+            fileList.addAll(ls);
+            loadFileOnListView();
+        });
     }
+
     public void loadFileOnListView() {
         fileList.sort(Comparator.comparing(NodeFile::getName));
+        System.out.println(String.format("ls: %d", fileList.size()));
         mFileNamesModel.clear();
         for (NodeFile file: fileList) {
             mFileNamesModel.addElement(file);

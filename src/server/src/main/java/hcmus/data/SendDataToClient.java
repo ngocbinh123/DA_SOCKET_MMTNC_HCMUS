@@ -8,12 +8,14 @@ import java.io.PrintWriter;
 
 public class SendDataToClient {
     public static void pleaseRemoveFileByNodeId(Client client, int nodeId) {
-        try {
-            PrintWriter out = new PrintWriter(client.getSocket().getOutputStream(), true);
-            out.println(String.format(Constant.MSG_NOTIFY_SOCKET_IS_QUIT, SOCKET_TYPE.NODE.name(), nodeId));
-            out.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (client.getSocket().isConnected()) {
+            try {
+                PrintWriter out = new PrintWriter(client.getSocket().getOutputStream(), true);
+                out.println(String.format(Constant.MSG_NOTIFY_SOCKET_IS_QUIT, SOCKET_TYPE.NODE.name(), nodeId));
+                out.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 }

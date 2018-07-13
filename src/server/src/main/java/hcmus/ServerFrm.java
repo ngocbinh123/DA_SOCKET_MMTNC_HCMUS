@@ -11,7 +11,6 @@ import hcmus.views.VerticalPanel;
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Comparator;
 
 public class ServerFrm extends BaseFrm implements ISocketServerContract.View {
@@ -76,12 +75,48 @@ public class ServerFrm extends BaseFrm implements ISocketServerContract.View {
 
     @Override
     public void showNodeOnUI(final Node node) {
-        EventQueue.invokeLater(() -> mNodesModel.addElement(node));
+        EventQueue.invokeLater(() -> {
+            ArrayList<Node> nodes = new ArrayList<>();
+            nodes.add(node);
+            ArrayList<String> nodeNames = new ArrayList<>();
+            nodeNames.add(node.getName());
+            for (int i = 0; i < mNodesModel.size(); i++) {
+                Node item = mNodesModel.get(i);
+                if (!nodeNames.contains(item.getName())) {
+                    nodeNames.add(item.getName());
+                    nodes.add(item);
+                }
+            }
+
+            nodes.sort(Comparator.comparing(Node::getName));
+            mNodesModel.clear();
+            for (Node item: nodes) {
+                mNodesModel.addElement(item);
+            }
+        });
     }
 
     @Override
     public void showClientOnUI(final Client client) {
-        EventQueue.invokeLater(() -> mClientsModel.addElement(client));
+        EventQueue.invokeLater(() -> {
+            ArrayList<Client> clients = new ArrayList<>();
+            clients.add(client);
+            ArrayList<String> clientNames = new ArrayList<>();
+            clientNames.add(client.getName());
+            for (int i = 0; i < mClientsModel.size(); i++) {
+                Client item = mClientsModel.get(i);
+                if (!clientNames.contains(item.getName())) {
+                    clientNames.add(item.getName());
+                    clients.add(item);
+                }
+            }
+
+            clients.sort(Comparator.comparing(Client::getName));
+            mClientsModel.clear();
+            for (Client item : clients) {
+                mClientsModel.addElement(item);
+            }
+        });
     }
 
     @Override
@@ -91,23 +126,28 @@ public class ServerFrm extends BaseFrm implements ISocketServerContract.View {
         });
     }
 
-    ArrayList<NodeFile> arr = new ArrayList<>();
+    private ArrayList<NodeFile> fileList = new ArrayList<>();
     @Override
     public void showFilesOnUI(ArrayList<NodeFile> files) {
-//        arr.addAll(files);
-//        arr.sort(Comparator.comparing(NodeFile::getName));
-//        mFilesModel.clear();
-//        for (NodeFile file : arr) {
-//
-//        }
+        fileList.addAll(files);
+        loadFileOnListView();
+    }
+
+    private void loadFileOnListView() {
+        fileList.sort(Comparator.comparing(NodeFile::getName));
+        mFilesModel.clear();
+        for (NodeFile file: fileList) {
+            mFilesModel.addElement(file);
+        }
     }
 
     private void removeFiles(int nodeId) {
-        for (int i =  mFilesModel.size() - 1; i >= 0; i--) {
-            if (mFilesModel.get(i).getNodeId() == nodeId) {
-                mFilesModel.remove(i);
+        for (int i =  fileList.size() - 1; i >= 0; i--) {
+            if (fileList.get(i).getNodeId() == nodeId) {
+                fileList.remove(i);
             }
         }
+        loadFileOnListView();
     }
 
     @Override

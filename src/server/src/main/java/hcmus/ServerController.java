@@ -7,6 +7,8 @@ import hcmus.data.Node;
 import hcmus.data.NodeFile;
 import hcmus.data.Server;
 
+import java.util.ArrayList;
+
 public class ServerController extends BaseController<ISocketServerContract.View> implements ISocketServerContract.Controller, Server.ServerListener {
     private Server mServer;
     @Override
@@ -18,10 +20,12 @@ public class ServerController extends BaseController<ISocketServerContract.View>
     @Override
     public void onHavingNewNode(Node node) {
         getView().showNodeOnUI(node);
+        ArrayList<NodeFile> ls = new ArrayList<>();
         for (String name : node.getFileNames()) {
             NodeFile file = new NodeFile(node, name);
-            getView().showFileOnUI(file);
+            ls.add(file);
         }
+        getView().showFilesOnUI(ls);
     }
 
     @Override

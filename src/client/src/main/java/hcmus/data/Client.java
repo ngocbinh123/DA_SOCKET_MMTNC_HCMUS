@@ -36,7 +36,6 @@ public class Client implements ISocketContract {
         this.listener = listener;
     }
 
-    private List<NodeFile> files = new ArrayList<>();
     private List<String> nodesJson = new ArrayList<>();
 
     @Override
@@ -102,7 +101,9 @@ public class Client implements ISocketContract {
             try {
                 while (currentSocket.isConnected()) {
                     String message = in.readLine();
-                    if (message != null && message.contains("{") && message.contains("}")) {
+                    if (message == null) {
+
+                    }else if (message.contains("{") && message.contains("}")) {
                         message = message.replace("{", "");
                         message = message.replace("}", "");
                         nodesJson.add(message);
@@ -146,6 +147,7 @@ public class Client implements ISocketContract {
     }
 
     private void handleFilesJsonFromServer() {
+        List<NodeFile> files = new ArrayList<>();
         for (String json : nodesJson) {
             String[] pars = json.split(",");
             String id= pars[0].replace("id:","").trim();
