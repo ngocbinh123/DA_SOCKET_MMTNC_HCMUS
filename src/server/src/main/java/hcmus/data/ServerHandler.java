@@ -57,13 +57,13 @@ public class ServerHandler extends Thread {
                 } else if (received.contains(Constant.MSG_WHO_ARE_YOU)) {
                     String json = received.replace(Constant.MSG_WHO_ARE_YOU + ": ", "");
                     info = BaseInfo.parseToObject(json);
+                    this.type = info.getType();
                     this.newNodeId = info.getId();
-                    if (info.getType() == SOCKET_TYPE.NODE) {
+                    if (type == SOCKET_TYPE.NODE) {
                         listener.newNode(new Node(newNodeId, info.getName(), currentSocket, info.getFileNames()));
                     }else {
                         Client client = new Client(newNodeId, info.getName(), currentSocket);
                         listener.newClient(client);
-                        return;
                     }
                 }
             }while (received == null || !received.equalsIgnoreCase(Constant.MSG_QUIT));
@@ -78,7 +78,7 @@ public class ServerHandler extends Thread {
             out.close();
             in.close();
             currentSocket.close();
-            listener.closeSocket(type, newNodeId);
+            listener.closeSocket(type, type == SOCKET_TYPE.NODE ? newNodeId : newClientId);
         } catch (IOException e) {
             e.printStackTrace();
         }

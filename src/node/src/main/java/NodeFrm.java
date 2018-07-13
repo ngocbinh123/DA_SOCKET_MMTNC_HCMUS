@@ -67,7 +67,7 @@ public class NodeFrm extends BaseFrm implements INodeContract.View {
         vActConnect.addActionListener(e -> {
             if (vActConnect.getText().equalsIgnoreCase(SOCKET_STATUS.DISCONNECT.getValue())) {
                 mController.disconnect();
-                vActConnect.setText("Connect To Server");
+                clearInfo();
             }else {
                 mController.requestConnectToServer();
             }
@@ -78,22 +78,23 @@ public class NodeFrm extends BaseFrm implements INodeContract.View {
     }
 
     @Override
-    public void updateDataOnUI(boolean isConnect, Node node) {
-        EventQueue.invokeLater(() -> {
-            if (isConnect) {
-                vLblStatus.setText("Status: " + SOCKET_STATUS.CONNECT.getValue());
-                vActConnect.setText(SOCKET_STATUS.DISCONNECT.getValue());
-                vLblFileSize.setText(String.format("Files: %d", node.getFileSize()));
-                for (File file : node.getFiles()) {
-                    mFileNamesModel.addElement(file.getName());
-                }
-                vLblNodeName.setText("Name: " + node.getName());
-                vLblLocalPort.setText("Local port: " + String.valueOf(node.getLocalPort()));
-                vLblFileSize.setText(String.format("Files: %d", node.getFileSize()));
-            }else {
-                vLblStatus.setText("Status: " + SOCKET_STATUS.DISCONNECT.getValue());
-                vActConnect.setText("Connect To Server");
-            }
-        });
+    public void updateDataOnUI(Node node) {
+        vLblStatus.setText("Status: " + SOCKET_STATUS.CONNECT.getValue());
+        vActConnect.setText(SOCKET_STATUS.DISCONNECT.getValue());
+        vLblFileSize.setText(String.format("Files: %d", node.getFileSize()));
+        for (File file : node.getFiles()) {
+            mFileNamesModel.addElement(file.getName());
+        }
+        vLblNodeName.setText("Name: " + node.getName());
+        vLblLocalPort.setText("Local port: " + String.valueOf(node.getLocalPort()));
+        vLblFileSize.setText(String.format("Files: %d", node.getFileSize()));
+    }
+
+    private void clearInfo() {
+        vLblNodeName.setText("Name:");
+        vLblStatus.setText("Status:");
+        vActConnect.setText("Connect To Server");
+        vLblLocalPort.setText("Local port:");
+        mFileNamesModel.clear();
     }
 }

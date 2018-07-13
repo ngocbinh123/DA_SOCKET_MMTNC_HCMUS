@@ -10,6 +10,9 @@ import hcmus.views.VerticalPanel;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
 
 public class ServerFrm extends BaseFrm implements ISocketServerContract.View {
     private ServerController mController;
@@ -73,32 +76,30 @@ public class ServerFrm extends BaseFrm implements ISocketServerContract.View {
 
     @Override
     public void showNodeOnUI(final Node node) {
-        EventQueue.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                mNodesModel.addElement(node);
-            }
-        });
+        EventQueue.invokeLater(() -> mNodesModel.addElement(node));
     }
 
     @Override
     public void showClientOnUI(final Client client) {
-        EventQueue.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                mClientsModel.addElement(client);
-            }
-        });
+        EventQueue.invokeLater(() -> mClientsModel.addElement(client));
     }
 
     @Override
     public void showFileOnUI(final NodeFile file) {
-        EventQueue.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                mFilesModel.addElement(file);
-            }
+        EventQueue.invokeLater(() -> {
+            mFilesModel.addElement(file);
         });
+    }
+
+    ArrayList<NodeFile> arr = new ArrayList<>();
+    @Override
+    public void showFilesOnUI(ArrayList<NodeFile> files) {
+//        arr.addAll(files);
+//        arr.sort(Comparator.comparing(NodeFile::getName));
+//        mFilesModel.clear();
+//        for (NodeFile file : arr) {
+//
+//        }
     }
 
     private void removeFiles(int nodeId) {
@@ -112,7 +113,8 @@ public class ServerFrm extends BaseFrm implements ISocketServerContract.View {
     @Override
     public void closeNode(Node node) {
         for (int i =0; i < mNodesModel.size(); i++) {
-            if (node.getId() == node.getId()) {
+            Node item = mNodesModel.get(i);
+            if (node.getId() == item.getId()) {
                 mNodesModel.remove(i);
                 removeFiles(node.getId());
                 break;
@@ -122,5 +124,11 @@ public class ServerFrm extends BaseFrm implements ISocketServerContract.View {
 
     @Override
     public void closeClient(Client client) {
+        for (int i = 0; i < mClientsModel.size(); i++) {
+            Client item = mClientsModel.get(i);
+            if (client.getId() == item.getId()) {
+                mClientsModel.remove(i);
+            }
+        }
     }
 }

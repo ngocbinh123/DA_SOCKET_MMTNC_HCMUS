@@ -45,7 +45,12 @@ public class Node implements ISocketContract {
 
     }
 
+    @Override
     public void connect() {
+        new Thread(() -> listenRequestFromNodeOrClient()).start();
+    }
+
+    public void listenRequestFromNodeOrClient() {
         try {
             currentSocket = new Socket(hostName, serverPort);
             out = new PrintWriter(currentSocket.getOutputStream());

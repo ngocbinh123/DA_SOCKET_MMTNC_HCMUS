@@ -9,6 +9,7 @@ public interface IClientContract {
     interface View extends ILifeCycleContract.View {
         void updateDataOnUI(Client client);
         void showFilesOnUI(List<NodeFile> ls);
+        void removeFilesByNodeId(String nodeId);
         void downloadFailure(String err);
         void downloadSuccessful(int index, NodeFile file);
     }

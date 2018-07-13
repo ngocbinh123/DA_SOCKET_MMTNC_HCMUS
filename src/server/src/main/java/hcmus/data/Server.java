@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Server extends Thread implements ServerHandler.ServerHandleListener {
@@ -66,6 +67,17 @@ public class Server extends Thread implements ServerHandler.ServerHandleListener
         mNodesIndex++;
         mStoredNodes.add(node);
         listener.onHavingNewNode(node);
+        sendFilesOfNewNodeToClient(node);
+    }
+
+    private void sendFilesOfNewNodeToClient(Node node) {
+        if (!mStoredClients.isEmpty()) {
+            new Thread(() -> {
+                for (Client client : mStoredClients) {
+                    new SendFileToClient(client, Arrays.asList(node));
+                }
+            }).start();
+        }
     }
 
     @Override
@@ -73,18 +85,18 @@ public class Server extends Thread implements ServerHandler.ServerHandleListener
         mClientsIndex++;
         mStoredClients.add(client);
         listener.onHavingNewClient(client);
-        EventQueue.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                new SendFileToClient(client, mStoredNodes);
-            }
-        });
+        sendFileToClients(client);
+    }
+
+    private void sendFileToClients(Client client) {
+        new Thread(() -> new SendFileToClient(client, mStoredNodes) ).start();
     }
 
     @Override
     public void closeSocket(SOCKET_TYPE type, int id) {
         switch (type) {
             case NODE:
+                notifyClientToRemoveFilesOfClosedNode(id);
                 for (Node node : mStoredNodes) {
                     if (node.getId() == id) {
                         mStoredNodes.remove(node);
@@ -103,5 +115,13 @@ public class Server extends Thread implements ServerHandler.ServerHandleListener
                 }
                 break;
         }
+    }
+
+    private void notifyClientToRemoveFilesOfClosedNode(int nodeId) {
+        new Thread(() -> {
+            for (Client client : mStoredClients) {
+                SendDataToClient.pleaseRemoveFileByNodeId(client, nodeId);
+            }
+        }).start();
     }
 }

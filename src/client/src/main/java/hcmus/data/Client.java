@@ -1,9 +1,7 @@
 package hcmus.data;
 
-import hcmus.BaseInfo;
-import hcmus.Constant;
-import hcmus.ISocketContract;
-import hcmus.SOCKET_TYPE;
+import hcmus.*;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -25,6 +23,7 @@ public class Client implements ISocketContract {
     public interface ClientListener {
         void onConnectSuccessful(Client client);
         void receiveFilesFromServer(List<NodeFile> files);
+        void removeFilesByNodeId(String nodeId);
     }
 
     public Client(int port, ClientListener listener) {
@@ -93,7 +92,37 @@ public class Client implements ISocketContract {
         }).start();
     }
 
-    public void receiveFilesFromServer() {
+    public void startListenFromServer() {
+        nodesJson.clear();
+        new Thread(() -> listeningFromServer()).start();
+    }
+
+    public void listenFromServerContinue() {
+        new Thread(() -> {
+            try {
+                while (currentSocket.isConnected()) {
+                    String message = in.readLine();
+                    if (message != null && message.contains("{") && message.contains("}")) {
+                        message = message.replace("{", "");
+                        message = message.replace("}", "");
+                        nodesJson.add(message);
+                        handleFilesJsonFromServer();
+                    }else if (message.contains(Constant.MSG_QUIT)) {
+                        message = message.replace(Constant.MSG_QUIT+":","");
+                        if (message.contains(SOCKET_TYPE.NODE.name())) {
+                            String sNodeId = message.split("-")[1];
+                            listener.removeFilesByNodeId(sNodeId);
+                        }
+                    }
+                }
+            }catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }).start();
+    }
+
+    private void listeningFromServer() {
         try {
             boolean isCompleted = false;
             do {
@@ -107,26 +136,32 @@ public class Client implements ISocketContract {
                 }
 
                 if (nodesJson.size() > 0 && isCompleted) {
-                    for (String json : nodesJson) {
-                        String[] pars = json.split(",");
-                        String id= pars[0].replace("id:","").trim();
-                        String ip= pars[1].replace("ip:","").trim();
-                        String port= pars[2].replace("port:","").trim();
-                        String localPort= pars[3].replace("localPort:","").trim();
-                        String fileNamesJson= pars[4].replace("files:","").trim();
-                        List<String> fileNames = BaseInfo.getFilesFromJson(fileNamesJson);
-
-                        for (String name: fileNames) {
-                            NodeFile f = new NodeFile(name, id, ip, port, localPort);
-                            files.add(f);
-                        }
-                    }
-                    listener.receiveFilesFromServer(files);
-                  }
+                    handleFilesJsonFromServer();
+                    listenFromServerContinue();
+                }
             }while (!isCompleted);
         }catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void handleFilesJsonFromServer() {
+        for (String json : nodesJson) {
+            String[] pars = json.split(",");
+            String id= pars[0].replace("id:","").trim();
+            String ip= pars[1].replace("ip:","").trim();
+            String port= pars[2].replace("port:","").trim();
+            String localPort= pars[3].replace("localPort:","").trim();
+            String fileNamesJson= pars[4].replace("files:","").trim();
+            List<String> fileNames = BaseInfo.getFilesFromJson(fileNamesJson);
+
+            for (String name: fileNames) {
+                NodeFile f = new NodeFile(name, id, ip, port, localPort);
+                files.add(f);
+            }
+        }
+        listener.receiveFilesFromServer(files);
+        nodesJson.clear();
     }
 
     public String getName() {

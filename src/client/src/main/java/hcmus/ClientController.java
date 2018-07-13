@@ -4,11 +4,9 @@ import hcmus.RUDP.UDPReceiver;
 import hcmus.RUDP.UDPSender;
 import hcmus.data.Client;
 import hcmus.data.NodeFile;
-import java.awt.*;
+
 import java.io.File;
 import java.util.List;
-
-import static hcmus.Constant.LOCAL_HOST_NAME;
 
 public class ClientController extends BaseController<IClientContract.View> implements IClientContract.Controller, Client.ClientListener {
     private Client client;
@@ -54,7 +52,7 @@ public class ClientController extends BaseController<IClientContract.View> imple
     @Override
     public void onConnectSuccessful(Client client) {
         getView().updateDataOnUI(client);
-        EventQueue.invokeLater(() -> client.receiveFilesFromServer());
+        client.startListenFromServer();
     }
 
     @Override
@@ -62,4 +60,8 @@ public class ClientController extends BaseController<IClientContract.View> imple
         getView().showFilesOnUI(files);
     }
 
+    @Override
+    public void removeFilesByNodeId(String nodeId) {
+        getView().removeFilesByNodeId(nodeId);
+    }
 }

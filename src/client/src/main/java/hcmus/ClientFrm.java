@@ -10,6 +10,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -39,7 +40,7 @@ public class ClientFrm extends BaseFrm implements IClientContract.View, ListSele
     private VerticalPanel panelRightContainer;
     private DefaultListModel<NodeFile> mFileNamesModel;
     private JLabel vLblStatus;
-    private JLabel vLblNodeName;
+    private JLabel vLblClientName;
     private JLabel vLblLocalPort;
     private JLabel vLblFileSize;
     private void createUIComponents() {
@@ -50,7 +51,7 @@ public class ClientFrm extends BaseFrm implements IClientContract.View, ListSele
         panelRightContainer = new VerticalPanel();
 
         vLblStatus = new JLabel("Status: ");
-        vLblNodeName = new JLabel("Name: ");
+        vLblClientName = new JLabel("Name: ");
         vLblLocalPort = new JLabel("Local port: ");
         vLblFileSize = new JLabel("Files: ");
 
@@ -58,7 +59,7 @@ public class ClientFrm extends BaseFrm implements IClientContract.View, ListSele
         panelLeftContainer.add(lblInfo);
 
         panelLeftContainer.add(vLblStatus);
-        panelLeftContainer.add(vLblNodeName);
+        panelLeftContainer.add(vLblClientName);
         panelLeftContainer.add(vLblLocalPort);
 
         panelRightContainer.add(vLblFileSize);
@@ -75,9 +76,8 @@ public class ClientFrm extends BaseFrm implements IClientContract.View, ListSele
         vActConnect = new JButton("Connect To Server");
         vActConnect.addActionListener(e -> {
             if (vActConnect.getText().equalsIgnoreCase(SOCKET_STATUS.DISCONNECT.getValue())) {
+                clearInfo();
                 mController.disconnect();
-                vActConnect.setText("Connect To Server");
-                mFileNamesModel.clear();
             }else {
                 mController.requestConnectToServer();
             }
@@ -89,20 +89,35 @@ public class ClientFrm extends BaseFrm implements IClientContract.View, ListSele
 
     @Override
     public void updateDataOnUI(Client client) {
-        EventQueue.invokeLater(() -> {
-            vLblStatus.setText("Status: " + SOCKET_STATUS.CONNECT.getValue());
-            vActConnect.setText(SOCKET_STATUS.DISCONNECT.getValue());
-            vLblNodeName.setText("Name: " + client.getName());
-            vLblLocalPort.setText("Local port: " + String.valueOf(client.getLocalPort()));
-        });
+        vLblStatus.setText("Status: " + SOCKET_STATUS.CONNECT.getValue());
+        vActConnect.setText(SOCKET_STATUS.DISCONNECT.getValue());
+        vLblClientName.setText("Name: " + client.getName());
+        vLblLocalPort.setText("Local port: " + String.valueOf(client.getLocalPort()));
+    }
+
+    private ArrayList<NodeFile> fileList = new ArrayList<>();
+    @Override
+    public void showFilesOnUI(List<NodeFile> ls) {
+        fileList.addAll(ls);
+        loadFileOnListView();
+    }
+    public void loadFileOnListView() {
+        fileList.sort(Comparator.comparing(NodeFile::getName));
+        mFileNamesModel.clear();
+        for (NodeFile file: fileList) {
+            mFileNamesModel.addElement(file);
+        }
     }
 
     @Override
-    public void showFilesOnUI(List<NodeFile> ls) {
-        ls.sort(Comparator.comparing(NodeFile::getName));
-        for (NodeFile file: ls) {
-            mFileNamesModel.addElement(file);
+    public void removeFilesByNodeId(String nodeId) {
+        for (int i = fileList.size() - 1; i >= 0;i--) {
+            NodeFile item = fileList.get(i);
+            if (item.getNodeId().contains(nodeId)) {
+                fileList.remove(i);
+            }
         }
+        loadFileOnListView();
     }
 
     @Override
@@ -149,5 +164,14 @@ public class ClientFrm extends BaseFrm implements IClientContract.View, ListSele
             storedDir = fileToSave.getParentFile();
             mController.requestDownload(position, nodeFile, fileToSave.getAbsolutePath());
         }
+    }
+
+    private void clearInfo() {
+        vLblClientName.setText("Name:");
+        vLblStatus.setText("Status:");
+        vActConnect.setText("Connect To Server");
+        vLblLocalPort.setText("Local port:");
+        mFileNamesModel.clear();
+        fileList.clear();
     }
 }

@@ -11,6 +11,7 @@ public class NodeController extends BaseController<INodeContract.View> implement
     public void requestConnectToServer() {
         if (node == null) {
             node = new Node(SERVER_PORT, this);
+            node.connect();
         }else {
             node.reconnect();
         }
@@ -18,7 +19,7 @@ public class NodeController extends BaseController<INodeContract.View> implement
 
     @Override
     public void onConnectSuccessful(Node node) {
-        getView().updateDataOnUI(true, node);
+        getView().updateDataOnUI(node);
         listenRequestFromClient();
     }
 

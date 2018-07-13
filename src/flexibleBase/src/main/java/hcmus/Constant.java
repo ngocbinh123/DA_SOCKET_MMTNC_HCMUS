@@ -4,6 +4,7 @@ public class Constant {
     public static final String MSG_WHO_ARE_YOU = "Who are you?";
     public static final String MSG_PLS_SEND_YOUR_FILES = "Please send me your files";
     public static final String MSG_QUIT = "quit";
+    public static final String MSG_NOTIFY_SOCKET_IS_QUIT = "quit:%s-%d";
     public static final String MSG_COMPLETED = "completed";
     public static final String LOCAL_HOST_NAME = "localhost";
 //    public static final String MSG_FILES_JSON = "New files from:%s - files:%s";
