@@ -4,6 +4,7 @@ import hcmus.SOCKET_STATUS;
 import hcmus.views.VerticalPanel;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.io.File;
 
@@ -36,9 +37,10 @@ public class NodeFrm extends BaseFrm implements INodeContract.View {
     private JLabel vLblFileSize;
 
     private void createUIComponents() {
+
         vPanelMain = new JPanel(new BorderLayout());
         vPanelBody = new JPanel(new GridLayout(0,2));
-
+        vPanelBody.setBorder(new EmptyBorder(10, 10, 10, 10));
         panelLeftContainer = new VerticalPanel();
         panelRightContainer = new VerticalPanel();
 
@@ -48,6 +50,9 @@ public class NodeFrm extends BaseFrm implements INodeContract.View {
         vLblFileSize = new JLabel("Files: ");
 
         JLabel lblInfo = new JLabel("Node Information:");
+        Font labelFont = lblInfo.getFont();
+        lblInfo.setForeground(Color.BLUE);
+        lblInfo.setFont(new Font(labelFont.getName(), Font.BOLD, 14));
         panelLeftContainer.add(lblInfo);
 
         panelLeftContainer.add(vLblStatus);

@@ -2,7 +2,6 @@ package hcmus.data;
 
 import hcmus.SOCKET_TYPE;
 
-import java.awt.*;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;

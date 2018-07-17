@@ -6,6 +6,7 @@ import hcmus.views.NodeFileRender;
 import hcmus.views.VerticalPanel;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
@@ -46,7 +47,7 @@ public class ClientFrm extends BaseFrm implements IClientContract.View, ListSele
     private void createUIComponents() {
         vPanelMain = new JPanel(new BorderLayout());
         vPanelBody = new JPanel(new GridLayout(0,2));
-
+        vPanelBody.setBorder(new EmptyBorder(10, 10, 10, 10));
         panelLeftContainer = new VerticalPanel();
         panelRightContainer = new VerticalPanel();
 
@@ -56,6 +57,9 @@ public class ClientFrm extends BaseFrm implements IClientContract.View, ListSele
         vLblFileSize = new JLabel("Files: ");
 
         JLabel lblInfo = new JLabel("Client Information:");
+        Font labelFont = lblInfo.getFont();
+        lblInfo.setForeground(Color.BLUE);
+        lblInfo.setFont(new Font(labelFont.getName(), Font.BOLD, 14));
         panelLeftContainer.add(lblInfo);
 
         panelLeftContainer.add(vLblStatus);

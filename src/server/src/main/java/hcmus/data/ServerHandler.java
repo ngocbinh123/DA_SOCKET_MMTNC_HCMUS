@@ -45,6 +45,9 @@ public class ServerHandler extends Thread {
 
             String received;
             do {
+                if (!currentSocket.isConnected()) {
+                    return;
+                }
                 received = in.readLine();
                 if (received != null) {
                     System.out.println("===> " + received);

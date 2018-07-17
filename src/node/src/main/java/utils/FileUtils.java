@@ -17,7 +17,13 @@ public class FileUtils {
             case 3:
                 file = new File(this.getClass().getResource("/node3").getFile());
                 break;
-                default:
+            case 4:
+                file = new File(this.getClass().getResource("/node4").getFile());
+                break;
+            case 5:
+                file = new File(this.getClass().getResource("/node5").getFile());
+                break;
+            default:
                     file = new File(this.getClass().getResource("/node").getFile());
                     break;
         }

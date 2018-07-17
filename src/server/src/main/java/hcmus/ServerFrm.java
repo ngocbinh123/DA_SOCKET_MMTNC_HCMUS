@@ -7,8 +7,8 @@ import hcmus.views.ClientRender;
 import hcmus.views.NodeFileRender;
 import hcmus.views.NodeRender;
 import hcmus.views.VerticalPanel;
-
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -17,7 +17,7 @@ public class ServerFrm extends BaseFrm implements ISocketServerContract.View {
     private ServerController mController;
     public JPanel vPanelMain;
     private JPanel vPanelBody;
-    private JPanel vPanelFooter;
+    private VerticalPanel vPanelFooter;
     private JList vFilesList;
     private DefaultListModel<NodeFile> mFilesModel;
     private DefaultListModel<Node> mNodesModel;
@@ -36,14 +36,26 @@ public class ServerFrm extends BaseFrm implements ISocketServerContract.View {
 
     private void createUIComponents() {
         vPanelBody = new JPanel(new GridLayout(0,2));
-        vPanelFooter = new JPanel(new GridLayout(0,1));
+        vPanelBody.setBorder(new EmptyBorder(10, 10, 10, 10));
+        vPanelFooter = new VerticalPanel();
+        vPanelFooter.setBorder(new EmptyBorder(10, 10, 10, 10));
 
+        JLabel lblNodeFiles = new JLabel("Node files:");
+        lblNodeFiles.setForeground(Color.BLUE);
+        vPanelFooter.add(lblNodeFiles);
         VerticalPanel panelLeftContainer = new VerticalPanel();
         VerticalPanel panelRightContainer = new VerticalPanel();
 
         mClientsModel = new DefaultListModel<>();
-        panelLeftContainer.add(new JLabel("Clients:"));
-        panelRightContainer.add(new JLabel("Nodes:"));
+        JLabel lblClient = new JLabel("Clients:");
+        lblClient.setForeground(Color.BLUE);
+        panelLeftContainer.add(lblClient);
+        panelLeftContainer.setBorder(new EmptyBorder(0, 0, 0, 5));
+        JLabel lblNodes = new JLabel("Nodes:");
+        lblNodes.setForeground(Color.BLUE);
+        panelRightContainer.add(lblNodes);
+        panelRightContainer.setBorder(new EmptyBorder(0, 5, 0, 0));
+
 
         JList<Client> clientJList = new JList<>();
         clientJList.setCellRenderer(new ClientRender());
@@ -121,9 +133,7 @@ public class ServerFrm extends BaseFrm implements ISocketServerContract.View {
 
     @Override
     public void showFileOnUI(final NodeFile file) {
-        EventQueue.invokeLater(() -> {
-            mFilesModel.addElement(file);
-        });
+        EventQueue.invokeLater(() -> mFilesModel.addElement(file));
     }
 
     private ArrayList<NodeFile> fileList = new ArrayList<>();
