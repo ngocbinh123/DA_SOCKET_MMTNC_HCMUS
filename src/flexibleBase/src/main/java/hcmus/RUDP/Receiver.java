@@ -1,5 +1,7 @@
 package hcmus.RUDP;
 
+import hcmus.Constant;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.net.DatagramPacket;
@@ -12,9 +14,23 @@ import java.util.zip.CRC32;
 
 public class Receiver {
     static int pkt_size = 1000;
+    private HandleListener mListener;
+    public interface HandleListener {
+        void onCompleted(File file);
+        void onError(String err);
+    }
+
+    public Receiver(int sk2_dst_port, int sk3_dst_port) {
+        this(sk2_dst_port, sk3_dst_port, null);
+    }
+
+    public Receiver(int port, HandleListener listener) {
+        this(port, port + 2, listener);
+    }
 
     // Receiver constructor
-    public Receiver(int sk2_dst_port, int sk3_dst_port, String path) {
+    public Receiver(int sk2_dst_port, int sk3_dst_port, HandleListener listener) {
+        this.mListener = listener;
         DatagramSocket sk2, sk3;
         System.out.println("Receiver: sk2_dst_port=" + sk2_dst_port + ", " + "sk3_dst_port=" + sk3_dst_port + ".");
 
@@ -33,10 +49,11 @@ public class Receiver {
                 InetAddress dst_addr = InetAddress.getByName("127.0.0.1");
 
                 FileOutputStream fos = null;
+                File file = null;
                 // make directory
-                path = ((path.substring(path.length()-1)).equals("/"))? path: path + "/";	// append slash if missing
-                File filePath = new File(path);
-                if (!filePath.exists()) filePath.mkdir();
+//                path = ((path.substring(path.length()-1)).equals("/"))? path: path + "/";	// append slash if missing
+//                File filePath = new File(path);
+//                if (!filePath.exists()) filePath.mkdir();
 
                 // listen on sk2_dst_port
                 while (!isTransferComplete) {
@@ -52,7 +69,6 @@ public class Receiver {
                     if (Arrays.equals(received_checksum, calculated_checksum)){
                         int seqNum = ByteBuffer.wrap(copyOfRange(in_data, 8, 12)).getInt();
                         System.out.println("Receiver: Received sequence number: " + seqNum);
-
                         // if packet received in order
                         if (seqNum == nextSeqNum){
                             // if final packet (no data), send teardown ack
@@ -63,9 +79,8 @@ public class Receiver {
                                 isTransferComplete = true;			// set flag to true
                                 System.out.println("Receiver: All packets received! File Created!");
                                 continue;	// end listener
-                            }
-                            // else send ack
-                            else{
+                            }else {
+//                                send ack
                                 byte[] ackPkt = generatePacket(seqNum);
                                 sk3.send(new DatagramPacket(ackPkt, ackPkt.length, dst_addr, sk3_dst_port));
                                 System.out.println("Receiver: Sent Ack " + seqNum);
@@ -78,7 +93,7 @@ public class Receiver {
                                 System.out.println("Receiver: fileName length: " + fileNameLength + ", fileName:" + fileName);
 
                                 // create file
-                                File file = new File(path + fileName);
+                                file = new File(fileName);
                                 if (!file.exists()) file.createNewFile();
 
                                 // init fos
@@ -86,25 +101,18 @@ public class Receiver {
 
                                 // write initial data to fos
                                 fos.write(in_data, 16 + fileNameLength, in_pkt.getLength() - 16 - fileNameLength);
+                            } else { // if not first packet write to FileOutputStream
+                                fos.write(in_data, 12, in_pkt.getLength() - 12);
                             }
-
-                            // else if not first packet write to FileOutputStream
-                            else fos.write(in_data, 12, in_pkt.getLength() - 12);
 
                             nextSeqNum ++; 			// update nextSeqNum
                             prevSeqNum = seqNum;	// update prevSeqNum
-                        }
-
-                        // if out of order packet received, send duplicate ack
-                        else{
+                        } else { // if out of order packet received, send duplicate ack
                             byte[] ackPkt = generatePacket(prevSeqNum);
                             sk3.send(new DatagramPacket(ackPkt, ackPkt.length, dst_addr, sk3_dst_port));
                             System.out.println("Receiver: Sent duplicate Ack " + prevSeqNum);
                         }
-                    }
-
-                    // else packet is corrupted
-                    else{
+                    } else { // else packet is corrupted
                         System.out.println("Receiver: Corrupt packet dropped");
                         byte[] ackPkt = generatePacket(prevSeqNum);
                         sk3.send(new DatagramPacket(ackPkt, ackPkt.length, dst_addr, sk3_dst_port));
@@ -112,9 +120,12 @@ public class Receiver {
                     }
                 }
                 if (fos != null) fos.close();
+                if (listener != null)
+                    mListener.onCompleted(file);
             } catch (Exception e) {
                 e.printStackTrace();
                 System.exit(-1);
+                mListener.onError(e.getMessage());
             } finally {
                 sk2.close();
                 sk3.close();
@@ -123,6 +134,8 @@ public class Receiver {
             }
         } catch (SocketException e1) {
             e1.printStackTrace();
+            if (listener != null)
+                mListener.onError(e1.getMessage());
         }
     }// END constructor
 
@@ -149,11 +162,13 @@ public class Receiver {
 
     // main function
     public static void main(String[] args) {
+        String folder = "/Users/Binh.Nguyen/Documents/nnbinh/hcmus/DA_SOCKET_MMTNC_HCMUS/src/";
+        new Receiver(Constant.UDP_PORT, Constant.UDP_PORT + 1);
         // parse parameters
-        if (args.length != 3) {
-            System.err.println("Usage: java Receiver sk2_dst_port, sk3_dst_port, outputFolderPath");
-            System.exit(-1);
-        }
-        else new Receiver(Integer.parseInt(args[0]), Integer.parseInt(args[1]), args[2]);
+//        if (args.length != 3) {
+//            System.err.println("Usage: java Receiver sk2_dst_port, sk3_dst_port, outputFolderPath");
+//            System.exit(-1);
+//        }
+//        else new Receiver(Integer.parseInt(args[0]), Integer.parseInt(args[1]), args[2]);
     }
 }

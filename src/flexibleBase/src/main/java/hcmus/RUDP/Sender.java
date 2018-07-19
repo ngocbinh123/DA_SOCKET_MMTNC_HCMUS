@@ -1,5 +1,7 @@
 package hcmus.RUDP;
 
+import hcmus.Constant;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.net.DatagramPacket;
@@ -20,8 +22,10 @@ public class Sender {
 
     int base;					// base sequence number of window
     int nextSeqNum;				// next sequence number in window
-    String path;				// path of file to be sent
-    String fileName;			// filename to be saved by receiver
+    File sendFile;
+    String storagePath;
+//    String path;				// path of file to be sent
+//    String fileName;			// filename to be saved by receiver
     Vector<byte[]> packetsList;	// list of generated packets
     Timer timer;				// for timeouts
     Semaphore s;				// guard CS for base, nextSeqNum
@@ -73,7 +77,7 @@ public class Sender {
             try{
                 dst_addr = InetAddress.getByName("127.0.0.1"); // resolve dst_addr
                 // create byte stream
-                FileInputStream fis = new FileInputStream(new File(path));
+                FileInputStream fis = new FileInputStream(sendFile);
 
                 try {
                     // while there are still packets yet to be received by receiver
@@ -95,7 +99,7 @@ public class Sender {
                             else{
                                 // if first packet, special handling: prepend file information
                                 if (nextSeqNum == 0){
-                                    byte[] fileNameBytes = fileName.getBytes();
+                                    byte[] fileNameBytes = storagePath.getBytes();
                                     byte[] fileNameLengthBytes = ByteBuffer.allocate(4).putInt(fileNameBytes.length).array();
                                     byte[] dataBuffer = new byte[data_size];
                                     int dataLength = fis.read(dataBuffer, 0, data_size - 4 - fileNameBytes.length);
@@ -232,12 +236,41 @@ public class Sender {
         }
     }// END CLASS Timeout
 
+    public Sender(int port, File file, String storagePath) {
+        int sk1_dst_port =port;
+        int sk4_dst_port = port + 2;
+        base = 0;
+        nextSeqNum = 0;
+        this.sendFile = file;
+        this.storagePath = storagePath;
+        packetsList = new Vector<byte[]>(win_size);
+        isTransferComplete = false;
+        DatagramSocket sk1, sk4;
+        s = new Semaphore(1);
+        System.out.println("Sender: sk1_dst_port=" + sk1_dst_port + ", sk4_dst_port=" + sk4_dst_port + ", inputFilePath=" + file.getAbsolutePath() + ", outputFileName=" + storagePath);
+
+        try {
+            // create sockets
+            sk1 = new DatagramSocket();				// outgoing channel
+            sk4 = new DatagramSocket(sk4_dst_port);	// incoming channel
+
+            // create threads to process data
+            InThread th_in = new InThread(sk4);
+            OutThread th_out = new OutThread(sk1, sk1_dst_port, sk4_dst_port);
+            th_in.start();
+            th_out.start();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(-1);
+        }
+    }
     // sender constructor
     public Sender(int sk1_dst_port, int sk4_dst_port, String path, String fileName) {
         base = 0;
         nextSeqNum = 0;
-        this.path = path;
-        this.fileName = fileName;
+//        this.path = path;
+//        this.fileName = fileName;
         packetsList = new Vector<byte[]>(win_size);
         isTransferComplete = false;
         DatagramSocket sk1, sk4;
@@ -270,11 +303,15 @@ public class Sender {
     }
 
     public static void main(String[] args) {
+        String fileName = "/Users/Binh.Nguyen/Documents/nnbinh/hcmus/DA_SOCKET_MMTNC_HCMUS/src/node/src/main/resources/node/nguoi_am_phu.mp3";
+        String destFileName = "/Users/Binh.Nguyen/Documents/nnbinh/hcmus/DA_SOCKET_MMTNC_HCMUS/src/nguoi_am_phu.mp3";
+        new Sender(Constant.UDP_PORT, new File(fileName), destFileName);
+//        new Sender(Constant.UDP_PORT, Constant.UDP_PORT + 1, fileName, destFileName);
         // parse parameters
-        if (args.length != 4) {
-            System.err.println("Usage: java Sender sk1_dst_port, sk4_dst_port, inputFilePath, outputFileName");
-            System.exit(-1);
-        }
-        else new Sender(Integer.parseInt(args[0]), Integer.parseInt(args[1]), args[2], args[3]);
+//        if (args.length != 4) {
+//            System.err.println("Usage: java Sender sk1_dst_port, sk4_dst_port, inputFilePath, outputFileName");
+//            System.exit(-1);
+//        }
+//        else new Sender(Integer.parseInt(args[0]), Integer.parseInt(args[1]), args[2], args[3]);
     }
 }

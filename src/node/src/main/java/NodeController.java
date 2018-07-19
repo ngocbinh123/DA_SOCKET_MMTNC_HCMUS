@@ -1,6 +1,7 @@
 import data.Node;
 import hcmus.BaseController;
 import hcmus.Constant;
+import hcmus.RUDP.Sender;
 import hcmus.RUDP.UDPReceiver;
 import hcmus.RUDP.UDPSender;
 
@@ -38,10 +39,13 @@ public class NodeController extends BaseController<INodeContract.View> implement
                     System.out.println("onReceived: " + message);
                     if (message.contains(Constant.MSG_PLS_SEND_YOUR_FILES)) {
                         message = message.replace(Constant.MSG_PLS_SEND_YOUR_FILES+":","");
+                        String[] parts = message.split(";");
                         for (File f:node.getFiles()) {
                             if (message.contains(f.getName())) {
-                                UDPSender sender = new UDPSender(node.getLocalPort(), Constant.LOCAL_HOST_NAME);
-                                sender.sendFile(f);
+//                                UDPSender sender = new UDPSender(node.getLocalPort(), Constant.LOCAL_HOST_NAME);
+//                                sender.sendFile(f);
+                                String storagePath = parts[1].split(" ")[0].trim();
+                                new Sender(node.getLocalPort(), f, storagePath);
                                 return;
                             }
                         }

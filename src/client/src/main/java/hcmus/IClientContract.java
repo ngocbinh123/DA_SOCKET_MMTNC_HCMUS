@@ -17,6 +17,7 @@ public interface IClientContract {
     interface Controller {
         void requestConnectToServer();
         void disconnect();
-        void requestDownload(int index, NodeFile file, String storageDir);
+        void requestDownload(int index, NodeFile nodeFile, String storagePath);
+        void requestNodeSendFileByUDPReliable(int index, NodeFile nodeFile, String storagePath);
     }
 }

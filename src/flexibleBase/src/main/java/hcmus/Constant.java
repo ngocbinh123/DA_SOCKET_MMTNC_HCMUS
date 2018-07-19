@@ -12,5 +12,5 @@ public class Constant {
     public static final String STORAGE_DIR = "/Users/Binh.Nguyen/Documents/nnbinh/hcmus/DA_SOCKET_MMTNC_HCMUS/src/";
 
     public static final int MAX_BYTE =1024;
-//    public static final int UDP_PORT = 9876;
+    public static final int UDP_PORT = 9876;
 }

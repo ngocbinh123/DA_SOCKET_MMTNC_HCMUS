@@ -136,7 +136,10 @@ public class ClientFrm extends BaseFrm implements IClientContract.View, ListSele
 
     @Override
     public void downloadSuccessful(int index, NodeFile file) {
-        String msg = String.format("%s\n - %s",MSG_DOWNLOAD_SUCCESSFUL, file.getLocalFile().getAbsolutePath());
+        String msg = MSG_DOWNLOAD_SUCCESSFUL;
+        if (file != null) {
+            msg = String.format("%s\n - %s",MSG_DOWNLOAD_SUCCESSFUL, file.getLocalFile().getAbsolutePath());
+        }
         JOptionPane.showMessageDialog(vPanelMain,msg);
     }
 
@@ -171,7 +174,8 @@ public class ClientFrm extends BaseFrm implements IClientContract.View, ListSele
         if (userSelection == JFileChooser.APPROVE_OPTION) {
             File fileToSave = fileChooser.getSelectedFile();
             storedDir = fileToSave.getParentFile();
-            mController.requestDownload(position, nodeFile, fileToSave.getAbsolutePath());
+//            mController.requestDownload(position, nodeFile, fileToSave.getAbsolutePath());
+            mController.requestNodeSendFileByUDPReliable(position, nodeFile, fileToSave.getAbsolutePath());
         }
     }
 
