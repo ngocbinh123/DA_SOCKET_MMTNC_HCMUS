@@ -21,9 +21,6 @@ public class Node implements ISocketContract {
         void onConnectSuccessful(Node node);
     }
 
-    public Node(int serverPort, NodeListener listener) {
-        this(Constant.LOCAL_HOST_NAME, serverPort, listener);
-    }
 
     public Node(String hostName, int port, NodeListener listener) {
         this.hostName = hostName;

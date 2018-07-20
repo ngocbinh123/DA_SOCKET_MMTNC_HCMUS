@@ -12,10 +12,11 @@ public interface IClientContract {
         void removeFilesByNodeId(String nodeId);
         void downloadFailure(String err);
         void downloadSuccessful(int index, NodeFile file);
+        void showMessage(String message);
     }
 
     interface Controller {
-        void requestConnectToServer();
+        void requestConnectToServer(String serverIP);
         void disconnect();
         void requestDownload(int index, NodeFile nodeFile, String storagePath);
         void requestNodeSendFileByUDPReliable(int index, NodeFile nodeFile, String storagePath);

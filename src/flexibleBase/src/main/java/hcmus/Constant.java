@@ -7,6 +7,7 @@ public class Constant {
     public static final String MSG_NOTIFY_SOCKET_IS_QUIT = "quit:%s-%d";
     public static final String MSG_COMPLETED = "completed";
     public static final String LOCAL_HOST_NAME = "localhost";
+    public static final String SERVER_IP = LOCAL_HOST_NAME;
 //    public static final String MSG_FILES_JSON = "New files from:%s - files:%s";
     public static final String MSG_DOWNLOAD_SUCCESSFUL = "Download successful";
     public static final String STORAGE_DIR = "/Users/Binh.Nguyen/Documents/nnbinh/hcmus/DA_SOCKET_MMTNC_HCMUS/src/";

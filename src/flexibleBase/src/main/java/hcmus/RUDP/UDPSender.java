@@ -8,12 +8,12 @@ import java.net.*;
 public class UDPSender {
     private static final int PIECES_OF_FILE_SIZE = 1024 * 32;
     private DatagramSocket clientSocket;
-    private int serverPort;
-    private String serverHost;
+    private int mReceiverPort;
+    private String mReceiverIP;
 
-    public UDPSender(int serverPort, String serverHost) {
-        this.serverPort = serverPort;
-        this.serverHost = serverHost;
+    public UDPSender(int receiverPort, String receiverIP) {
+        this.mReceiverPort = receiverPort;
+        this.mReceiverIP = receiverIP;
     }
 
     public void connectServer() {
@@ -28,7 +28,7 @@ public class UDPSender {
         if (clientSocket == null) {
             connectServer();
         }
-        System.out.println("send file to client with port: " + String.valueOf(serverPort) + " host: " + serverHost);
+        System.out.println("send file to client with port: " + String.valueOf(mReceiverPort) + " host: " + mReceiverIP);
 
         InetAddress inetAddress;
         DatagramPacket sendPacket;
@@ -36,7 +36,7 @@ public class UDPSender {
         try {
             InputStream inputStream = new FileInputStream(fileSend);
             BufferedInputStream bis = new BufferedInputStream(inputStream);
-            inetAddress = InetAddress.getByName(serverHost);
+            inetAddress = InetAddress.getByName(mReceiverIP);
             byte[] bytePart = new byte[PIECES_OF_FILE_SIZE];
 
             // get file size
@@ -69,7 +69,7 @@ public class UDPSender {
             ObjectOutputStream oos = new ObjectOutputStream(baos);
             oos.writeObject(fileInfo);
             sendPacket = new DatagramPacket(baos.toByteArray(),
-                    baos.toByteArray().length, inetAddress, serverPort);
+                    baos.toByteArray().length, inetAddress, mReceiverPort);
             clientSocket.send(sendPacket);
 
             // send file content
@@ -77,13 +77,13 @@ public class UDPSender {
             // send pieces of file
             for (int i = 0; i < (count - 1); i++) {
                 sendPacket = new DatagramPacket(fileBytes[i], PIECES_OF_FILE_SIZE,
-                        inetAddress, serverPort);
+                        inetAddress, mReceiverPort);
                 clientSocket.send(sendPacket);
                 waitMillisecond(40);
             }
             // send last bytes of file
             sendPacket = new DatagramPacket(fileBytes[count - 1], PIECES_OF_FILE_SIZE,
-                    inetAddress, serverPort);
+                    inetAddress, mReceiverPort);
             clientSocket.send(sendPacket);
             waitMillisecond(40);
 
@@ -107,11 +107,11 @@ public class UDPSender {
         DatagramSocket clientSocket;
         try {
             clientSocket = new DatagramSocket();
-            InetAddress IPAddress = InetAddress.getByName(Constant.LOCAL_HOST_NAME);
+            InetAddress IPAddress = InetAddress.getByName(mReceiverIP);
             byte[] sendData = new byte[1024];
             byte[] receiveData = new byte[Constant.MAX_BYTE];
             sendData = sentence.getBytes();
-            DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, serverPort);
+            DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, mReceiverPort);
             clientSocket.send(sendPacket);
             DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
             clientSocket.receive(receivePacket);

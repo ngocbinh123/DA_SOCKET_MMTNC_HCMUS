@@ -26,10 +26,6 @@ public class Client implements ISocketContract {
         void removeFilesByNodeId(String nodeId);
     }
 
-    public Client(int port, ClientListener listener) {
-        this(Constant.LOCAL_HOST_NAME, port, listener);
-    }
-
     public Client(String hostName, int port, ClientListener listener) {
         this.hostName = hostName;
         this.ip = port;

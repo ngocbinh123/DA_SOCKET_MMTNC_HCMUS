@@ -3,15 +3,14 @@ import hcmus.BaseController;
 import hcmus.Constant;
 import hcmus.RUDP.Sender;
 import hcmus.RUDP.UDPReceiver;
-import hcmus.RUDP.UDPSender;
 
 import java.io.File;
 
 public class NodeController extends BaseController<INodeContract.View> implements INodeContract.Controller, Node.NodeListener {
     private Node node;
-    public void requestConnectToServer() {
+    public void requestConnectToServer(String serverIP) {
         if (node == null) {
-            node = new Node(SERVER_PORT, this);
+            node = new Node(serverIP, SERVER_PORT, this);
             node.connect();
         }else {
             node.reconnect();

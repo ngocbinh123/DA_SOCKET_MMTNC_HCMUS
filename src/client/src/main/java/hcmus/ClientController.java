@@ -12,9 +12,9 @@ import java.util.List;
 public class ClientController extends BaseController<IClientContract.View> implements IClientContract.Controller, Client.ClientListener {
     private Client client;
     @Override
-    public void requestConnectToServer() {
+    public void requestConnectToServer(String serverIP) {
         if (client == null) {
-            client = new Client(SERVER_PORT, this);
+            client = new Client(serverIP, SERVER_PORT, this);
             client.connect();
         }else {
             client.reconnect();
@@ -42,7 +42,7 @@ public class ClientController extends BaseController<IClientContract.View> imple
         })).start();
 
         new Thread(() -> {
-            UDPSender sender = new UDPSender(nodeFile.getNodePort()+1, Constant.LOCAL_HOST_NAME);
+            UDPSender sender = new UDPSender(nodeFile.getNodePort()+1, nodeFile.getNodeIP());
             sender.sendMessage(String.format("%s:%s;%s",Constant.MSG_PLS_SEND_YOUR_FILES, nodeFile.getName(), storagePath));
         }).start();
     }
@@ -66,7 +66,7 @@ public class ClientController extends BaseController<IClientContract.View> imple
         }).start();
 
         new Thread(() -> {
-            UDPSender sender = new UDPSender(nodeFile.getNodePort()+1, Constant.LOCAL_HOST_NAME);
+            UDPSender sender = new UDPSender(nodeFile.getNodePort()+1, nodeFile.getNodeIP());
             sender.sendMessage(String.format("%s:%s",Constant.MSG_PLS_SEND_YOUR_FILES, nodeFile.getName()));
         }).start();
     }

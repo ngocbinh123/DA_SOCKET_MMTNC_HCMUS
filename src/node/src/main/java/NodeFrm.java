@@ -1,8 +1,8 @@
 import data.Node;
 import hcmus.BaseFrm;
+import hcmus.Constant;
 import hcmus.SOCKET_STATUS;
 import hcmus.views.VerticalPanel;
-
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
@@ -27,10 +27,12 @@ public class NodeFrm extends BaseFrm implements INodeContract.View {
         mController.attachView(this);
     }
 
+    private JPanel vPanelHeader;
     private JPanel vPanelBody;
     private VerticalPanel panelLeftContainer;
     private VerticalPanel panelRightContainer;
     private DefaultListModel<String> mFileNamesModel;
+    private  JTextField txtServerIP;
     private JLabel vLblStatus;
     private JLabel vLblNodeName;
     private JLabel vLblLocalPort;
@@ -39,10 +41,19 @@ public class NodeFrm extends BaseFrm implements INodeContract.View {
     private void createUIComponents() {
 
         vPanelMain = new JPanel(new BorderLayout());
+        vPanelHeader = new JPanel(new GridLayout(0,2));
+
         vPanelBody = new JPanel(new GridLayout(0,2));
         vPanelBody.setBorder(new EmptyBorder(10, 10, 10, 10));
         panelLeftContainer = new VerticalPanel();
         panelRightContainer = new VerticalPanel();
+
+//        header
+        JLabel lblServerHost = new JLabel("Server IP: ", SwingConstants.RIGHT);
+        vPanelHeader.add(lblServerHost);
+
+        txtServerIP = new JTextField(Constant.SERVER_IP);
+        vPanelHeader.add(txtServerIP);
 
         vLblStatus = new JLabel("Status: ");
         vLblNodeName = new JLabel("Name: ");
@@ -74,10 +85,16 @@ public class NodeFrm extends BaseFrm implements INodeContract.View {
                 mController.disconnect();
                 clearInfo();
             }else {
-                mController.requestConnectToServer();
+                String serverIP = txtServerIP.getText().trim();
+                if (!serverIP.isEmpty()) {
+                    mController.requestConnectToServer(serverIP);
+                }else {
+                    showMessage("Server IP should't be null");
+                }
             }
         });
 
+        vPanelMain.add(vPanelHeader, BorderLayout.NORTH);
         vPanelMain.add(vPanelBody, BorderLayout.CENTER);
         vPanelMain.add(vActConnect, BorderLayout.SOUTH);
     }
@@ -93,6 +110,11 @@ public class NodeFrm extends BaseFrm implements INodeContract.View {
         vLblNodeName.setText("Name: " + node.getName());
         vLblLocalPort.setText("Local port: " + String.valueOf(node.getLocalPort()));
         vLblFileSize.setText(String.format("Files: %d", node.getFileSize()));
+    }
+
+    @Override
+    public void showMessage(String message) {
+        JOptionPane.showMessageDialog(vPanelMain,message);
     }
 
     private void clearInfo() {

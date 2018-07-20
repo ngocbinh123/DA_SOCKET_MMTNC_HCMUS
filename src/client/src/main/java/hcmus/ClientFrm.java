@@ -36,21 +36,33 @@ public class ClientFrm extends BaseFrm implements IClientContract.View, ListSele
         mController.attachView(this);
     }
 
+    private JPanel vPanelHeader;
     private JPanel vPanelBody;
     private VerticalPanel panelLeftContainer;
     private VerticalPanel panelRightContainer;
     private DefaultListModel<NodeFile> mFileNamesModel;
+    private  JTextField txtServerIP;
     private JLabel vLblStatus;
     private JLabel vLblClientName;
     private JLabel vLblLocalPort;
     private JLabel vLblFileSize;
     private void createUIComponents() {
         vPanelMain = new JPanel(new BorderLayout());
+        vPanelHeader = new JPanel(new GridLayout(0,2));
+
         vPanelBody = new JPanel(new GridLayout(0,2));
         vPanelBody.setBorder(new EmptyBorder(10, 10, 10, 10));
         panelLeftContainer = new VerticalPanel();
         panelRightContainer = new VerticalPanel();
 
+//        header
+        JLabel lblServerHost = new JLabel("Server IP: ", SwingConstants.RIGHT);
+        vPanelHeader.add(lblServerHost);
+
+        txtServerIP = new JTextField(Constant.SERVER_IP);
+        vPanelHeader.add(txtServerIP);
+
+//        left container
         vLblStatus = new JLabel("Status: ");
         vLblClientName = new JLabel("Name: ");
         vLblLocalPort = new JLabel("Local port: ");
@@ -66,6 +78,7 @@ public class ClientFrm extends BaseFrm implements IClientContract.View, ListSele
         panelLeftContainer.add(vLblClientName);
         panelLeftContainer.add(vLblLocalPort);
 
+//        right container
         panelRightContainer.add(vLblFileSize);
         mFileNamesModel = new DefaultListModel<>();
         JList<NodeFile> nodeFilesJList = new JList<>();
@@ -77,16 +90,23 @@ public class ClientFrm extends BaseFrm implements IClientContract.View, ListSele
         vPanelBody.add(panelLeftContainer);
         vPanelBody.add(panelRightContainer);
 
+//        footer
         vActConnect = new JButton("Connect To Server");
         vActConnect.addActionListener(e -> {
             if (vActConnect.getText().equalsIgnoreCase(SOCKET_STATUS.DISCONNECT.getValue())) {
                 clearInfo();
                 mController.disconnect();
             }else {
-                mController.requestConnectToServer();
+                String serverIP = txtServerIP.getText().trim();
+                if (!serverIP.isEmpty()) {
+                    mController.requestConnectToServer(serverIP);
+                }else {
+                    showMessage("Server IP should't be null");
+                }
             }
         });
 
+        vPanelMain.add(vPanelHeader, BorderLayout.NORTH);
         vPanelMain.add(vPanelBody, BorderLayout.CENTER);
         vPanelMain.add(vActConnect, BorderLayout.SOUTH);
     }
@@ -131,7 +151,7 @@ public class ClientFrm extends BaseFrm implements IClientContract.View, ListSele
 
     @Override
     public void downloadFailure(String err) {
-        JOptionPane.showMessageDialog(vPanelMain,err);
+        showMessage(err);
     }
 
     @Override
@@ -140,7 +160,7 @@ public class ClientFrm extends BaseFrm implements IClientContract.View, ListSele
         if (file != null) {
             msg = String.format("%s\n - %s",MSG_DOWNLOAD_SUCCESSFUL, file.getLocalFile().getAbsolutePath());
         }
-        JOptionPane.showMessageDialog(vPanelMain,msg);
+        showMessage(msg);
     }
 
     @Override
@@ -177,6 +197,11 @@ public class ClientFrm extends BaseFrm implements IClientContract.View, ListSele
 //            mController.requestDownload(position, nodeFile, fileToSave.getAbsolutePath());
             mController.requestNodeSendFileByUDPReliable(position, nodeFile, fileToSave.getAbsolutePath());
         }
+    }
+
+    @Override
+    public void showMessage(String message) {
+        JOptionPane.showMessageDialog(vPanelMain,message);
     }
 
     private void clearInfo() {
