@@ -88,7 +88,7 @@ public class ServerHandler extends Thread {
     }
 
     public void close() {
-        this.out.println("SERVER_IS_CLOSE");
+        this.out.println(Constant.SERVER_IS_CLOSE);
         out.flush();
 
 //        closeHandle();
