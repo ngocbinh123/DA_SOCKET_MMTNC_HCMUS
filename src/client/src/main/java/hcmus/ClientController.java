@@ -28,7 +28,7 @@ public class ClientController extends BaseController<IClientContract.View> imple
 
     @Override
     public void requestNodeSendFileByUDPReliable(int index, NodeFile nodeFile, String storagePath) {
-        new Thread(()-> new Receiver(nodeFile.getNodePort(), new Receiver.HandleListener() {
+        new Thread(()-> new Receiver(storagePath, nodeFile.getNodePort(), new Receiver.HandleListener() {
             @Override
             public void onCompleted(File file) {
                 nodeFile.setLocalFile(file);

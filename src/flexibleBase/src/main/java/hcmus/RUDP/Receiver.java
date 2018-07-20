@@ -15,21 +15,18 @@ import java.util.zip.CRC32;
 public class Receiver {
     static int pkt_size = 1000;
     private HandleListener mListener;
+    private String storagePath;
     public interface HandleListener {
         void onCompleted(File file);
         void onError(String err);
     }
 
-    public Receiver(int sk2_dst_port, int sk3_dst_port) {
-        this(sk2_dst_port, sk3_dst_port, null);
-    }
-
-    public Receiver(int port, HandleListener listener) {
-        this(port, port + 2, listener);
+    public Receiver(String storagePath, int port, HandleListener listener) {
+        this(storagePath, port, port + 2, listener);
     }
 
     // Receiver constructor
-    public Receiver(int sk2_dst_port, int sk3_dst_port, HandleListener listener) {
+    public Receiver(String storagePath, int sk2_dst_port, int sk3_dst_port, HandleListener listener) {
         this.mListener = listener;
         DatagramSocket sk2, sk3;
         System.out.println("Receiver: sk2_dst_port=" + sk2_dst_port + ", " + "sk3_dst_port=" + sk3_dst_port + ".");
@@ -93,7 +90,7 @@ public class Receiver {
                                 System.out.println("Receiver: fileName length: " + fileNameLength + ", fileName:" + fileName);
 
                                 // create file
-                                file = new File(fileName);
+                                file = new File(storagePath);
                                 if (!file.exists()) file.createNewFile();
 
                                 // init fos
@@ -160,15 +157,4 @@ public class Receiver {
         return destArr;
     }
 
-    // main function
-    public static void main(String[] args) {
-        String folder = "/Users/Binh.Nguyen/Documents/nnbinh/hcmus/DA_SOCKET_MMTNC_HCMUS/src/";
-        new Receiver(Constant.UDP_PORT, Constant.UDP_PORT + 1);
-        // parse parameters
-//        if (args.length != 3) {
-//            System.err.println("Usage: java Receiver sk2_dst_port, sk3_dst_port, outputFolderPath");
-//            System.exit(-1);
-//        }
-//        else new Receiver(Integer.parseInt(args[0]), Integer.parseInt(args[1]), args[2]);
-    }
 }

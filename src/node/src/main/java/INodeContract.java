@@ -5,6 +5,7 @@ public interface INodeContract {
     interface View extends ILifeCycleContract.View {
         void updateDataOnUI(Node node);
         void showMessage(String message);
+        void clearInfo();
     }
 
     interface Controller {

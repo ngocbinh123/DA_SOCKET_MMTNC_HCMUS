@@ -19,6 +19,8 @@ public class NodeFile {
         this.name = name;
         this.nodeId = nodeId;
         this.nodeIP = nodeIP;
+        this.nodeIP = this.nodeIP.replace("/","");
+        this.nodeIP = this.nodeIP.split(":")[0];
         this.nodePort = Integer.parseInt(nodePort);
         this.nodeLocalPort = Integer.parseInt(nodeLocalPort);
     }
