@@ -86,4 +86,11 @@ public class ServerHandler extends Thread {
             e.printStackTrace();
         }
     }
+
+    public void close() {
+        this.out.println("SERVER_IS_CLOSE");
+        out.flush();
+
+//        closeHandle();
+    }
 }

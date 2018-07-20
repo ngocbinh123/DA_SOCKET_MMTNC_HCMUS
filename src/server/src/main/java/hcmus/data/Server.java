@@ -11,6 +11,8 @@ import java.util.List;
 
 public class Server extends Thread implements ServerHandler.ServerHandleListener {
     private ServerSocket server;
+
+    private List<ServerHandler> mStoredHandler = new ArrayList<>();
     private List<Node> mStoredNodes = new ArrayList<>();
     private List<Client> mStoredClients = new ArrayList<>();
     private int mNodesIndex = 1;
@@ -45,7 +47,8 @@ public class Server extends Thread implements ServerHandler.ServerHandleListener
             try {
                 Socket newSocket = server.accept();
                 System.out.println(String.format("New client has port is %d connected.", newSocket.getPort()));
-                new ServerHandler(newSocket, this, mNodesIndex, mClientsIndex);
+                ServerHandler handler = new ServerHandler(newSocket, this, mNodesIndex, mClientsIndex);
+                mStoredHandler.add(handler);
                 System.out.println("New server initialized!");
             } catch (Exception e) {
                 e.printStackTrace();
@@ -55,7 +58,14 @@ public class Server extends Thread implements ServerHandler.ServerHandleListener
 
     public void close() {
         try {
+            for (ServerHandler handler : mStoredHandler) {
+                handler.close();
+            }
+            mStoredClients.clear();
+            mStoredNodes.clear();
+            mStoredHandler.clear();
             server.close();
+//            server.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
