@@ -52,6 +52,9 @@ public class ServerFrm extends BaseFrm implements ISocketServerContract.View {
                 new Thread(() -> mController.startListenConnections()).start();
             }else {
                 vActListen.setText("Start Listen");
+                mClientsModel.clear();
+                mNodesModel.clear();
+                mFilesModel.clear();
                 new Thread(() -> mController.stopListen()).start();
             }
         });
