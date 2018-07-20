@@ -18,5 +18,6 @@ public interface ISocketServerContract {
 
     interface Controller {
         void startListenConnections();
+        void stopListen();
     }
 }

@@ -16,6 +16,7 @@ import java.util.Comparator;
 public class ServerFrm extends BaseFrm implements ISocketServerContract.View {
     private ServerController mController;
     public JPanel vPanelMain;
+    private JPanel vPanelHeader;
     private JPanel vPanelBody;
     private VerticalPanel vPanelFooter;
     private JList vFilesList;
@@ -29,16 +30,32 @@ public class ServerFrm extends BaseFrm implements ISocketServerContract.View {
         mController.attachView(this);
     }
 
-    public void startListenConnections() {
-        mController.startListenConnections();
-    }
-
-
+    private JButton vActListen;
     private void createUIComponents() {
+        vPanelHeader= new JPanel(new FlowLayout());
         vPanelBody = new JPanel(new GridLayout(0,2));
         vPanelBody.setBorder(new EmptyBorder(10, 10, 10, 10));
         vPanelFooter = new VerticalPanel();
         vPanelFooter.setBorder(new EmptyBorder(10, 10, 10, 10));
+
+        JLabel lblServerIPTitle = new JLabel("Server IP: ");
+        vPanelHeader.add(lblServerIPTitle);
+
+        JLabel lblServerIP = new JLabel(getRemoteIP());
+        lblServerIP.setForeground(Color.RED);
+        vPanelHeader.add(lblServerIP);
+
+        vActListen = new JButton("Start Listen");
+        vActListen.addActionListener(e -> {
+            if (vActListen.getText().contains("Start")) {
+                vActListen.setText("Stop");
+                new Thread(() -> mController.startListenConnections()).start();
+            }else {
+                vActListen.setText("Start Listen");
+                new Thread(() -> mController.stopListen()).start();
+            }
+        });
+        vPanelHeader.add(vActListen);
 
         JLabel lblNodeFiles = new JLabel("Node files:");
         lblNodeFiles.setForeground(Color.BLUE);
@@ -79,10 +96,11 @@ public class ServerFrm extends BaseFrm implements ISocketServerContract.View {
         vFilesList.setCellRenderer(new NodeFileRender());
         JScrollPane scrollPane = new JScrollPane(vFilesList);
         vPanelFooter.add(scrollPane);
+        vPanelMain = new JPanel(new GridLayout(3,1));
 
-        vPanelMain = new JPanel(new GridLayout(2,1));
         vPanelMain.add(vPanelBody);
         vPanelMain.add(vPanelFooter);
+        vPanelMain.add(vPanelHeader);
     }
 
     @Override
