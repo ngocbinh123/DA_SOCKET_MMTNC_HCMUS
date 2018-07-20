@@ -53,7 +53,7 @@ public class Server extends Thread implements ServerHandler.ServerHandleListener
         }
     }
 
-    protected void close() {
+    public void close() {
         try {
             server.close();
         } catch (IOException e) {

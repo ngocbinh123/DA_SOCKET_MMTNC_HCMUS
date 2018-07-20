@@ -18,6 +18,11 @@ public class ServerController extends BaseController<ISocketServerContract.View>
     }
 
     @Override
+    public void stopListen() {
+        mServer.close();
+    }
+
+    @Override
     public void onHavingNewNode(Node node) {
         getView().showNodeOnUI(node);
         ArrayList<NodeFile> ls = new ArrayList<>();
