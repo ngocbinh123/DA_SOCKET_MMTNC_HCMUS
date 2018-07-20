@@ -19,8 +19,8 @@ public class Node implements ISocketContract {
     PrintWriter out; // send message to server
     public interface NodeListener {
         void onConnectSuccessful(Node node);
+        void onClosed();
     }
-
 
     public Node(String hostName, int port, NodeListener listener) {
         this.hostName = hostName;
@@ -39,7 +39,12 @@ public class Node implements ISocketContract {
 
     @Override
     public void disconnect() {
-
+        try {
+            currentSocket.close();
+            listener.onClosed();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -69,6 +74,9 @@ public class Node implements ISocketContract {
                         out.println(Constant.MSG_WHO_ARE_YOU + ": " + info.parseToString());
                         out.flush();
                         listener.onConnectSuccessful(this);
+                        buffer = null;
+                    }else if (buffer.contains(Constant.SERVER_IS_CLOSE)) {
+                        disconnect();
                     }
                 }while (buffer == null);
             } catch (IOException e) {
@@ -95,7 +103,7 @@ public class Node implements ISocketContract {
         return info.getFiles().size();
     }
 
-    public void close() {
+    public void requestDisConnectToServer() {
         out.println(Constant.MSG_QUIT);
         out.flush();
     }

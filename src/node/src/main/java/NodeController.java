@@ -24,8 +24,13 @@ public class NodeController extends BaseController<INodeContract.View> implement
     }
 
     @Override
+    public void onClosed() {
+        getView().clearInfo();
+    }
+
+    @Override
     public void disconnect() {
-        node.close();
+        node.requestDisConnectToServer();
     }
 
     private void listenRequestFromClient() {

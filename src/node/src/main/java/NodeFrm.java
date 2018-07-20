@@ -117,7 +117,8 @@ public class NodeFrm extends BaseFrm implements INodeContract.View {
         JOptionPane.showMessageDialog(vPanelMain,message);
     }
 
-    private void clearInfo() {
+    @Override
+    public void clearInfo() {
         vLblNodeName.setText("Name:");
         vLblStatus.setText("Status:");
         vActConnect.setText("Connect To Server");
