@@ -30,7 +30,7 @@ public class Sender {
     Timer timer;				// for timeouts
     Semaphore s;				// guard CS for base, nextSeqNum
     boolean isTransferComplete;	// if receiver has completely received the file
-
+    private String clientIP;
     // to start or stop the timer
     public void setTimer(boolean isNewTimer){
         if (timer != null) timer.cancel();
@@ -75,7 +75,8 @@ public class Sender {
         // sending process (updates nextSeqNum)
         public void run(){
             try{
-                dst_addr = InetAddress.getByName("127.0.0.1"); // resolve dst_addr
+//                dst_addr = InetAddress.getByName("127.0.0.1"); // resolve dst_addr
+                dst_addr = InetAddress.getByName(clientIP); // resolve dst_addr
                 // create byte stream
                 FileInputStream fis = new FileInputStream(sendFile);
 
@@ -236,18 +237,19 @@ public class Sender {
         }
     }// END CLASS Timeout
 
-    public Sender(int port, File file, String storagePath) {
+    public Sender(int port, File file, String storagePath, String clientIP) {
         int sk1_dst_port =port;
         int sk4_dst_port = port + 2;
         base = 0;
         nextSeqNum = 0;
         this.sendFile = file;
         this.storagePath = storagePath;
+        this.clientIP = clientIP;
         packetsList = new Vector<byte[]>(win_size);
         isTransferComplete = false;
         DatagramSocket sk1, sk4;
         s = new Semaphore(1);
-        System.out.println("Sender: sk1_dst_port=" + sk1_dst_port + ", sk4_dst_port=" + sk4_dst_port + ", inputFilePath=" + file.getAbsolutePath() + ", outputFileName=" + storagePath);
+        System.out.println("Sender: clientIP= "+ clientIP + " sk1_dst_port=" + sk1_dst_port + ", sk4_dst_port=" + sk4_dst_port + ", inputFilePath=" + file.getAbsolutePath() + ", outputFileName=" + storagePath);
 
         try {
             // create sockets
@@ -265,34 +267,6 @@ public class Sender {
             System.exit(-1);
         }
     }
-    // sender constructor
-    public Sender(int sk1_dst_port, int sk4_dst_port, String path, String fileName) {
-        base = 0;
-        nextSeqNum = 0;
-//        this.path = path;
-//        this.fileName = fileName;
-        packetsList = new Vector<byte[]>(win_size);
-        isTransferComplete = false;
-        DatagramSocket sk1, sk4;
-        s = new Semaphore(1);
-        System.out.println("Sender: sk1_dst_port=" + sk1_dst_port + ", sk4_dst_port=" + sk4_dst_port + ", inputFilePath=" + path + ", outputFileName=" + fileName);
-
-        try {
-            // create sockets
-            sk1 = new DatagramSocket();				// outgoing channel
-            sk4 = new DatagramSocket(sk4_dst_port);	// incoming channel
-
-            // create threads to process data
-            InThread th_in = new InThread(sk4);
-            OutThread th_out = new OutThread(sk1, sk1_dst_port, sk4_dst_port);
-            th_in.start();
-            th_out.start();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.exit(-1);
-        }
-    }// END Sender constructor
 
     // same as Arrays.copyOfRange in 1.6
     public byte[] copyOfRange(byte[] srcArr, int start, int end){
@@ -300,18 +274,5 @@ public class Sender {
         byte[] destArr = new byte[length];
         System.arraycopy(srcArr, start, destArr, 0, length);
         return destArr;
-    }
-
-    public static void main(String[] args) {
-        String fileName = "/Users/Binh.Nguyen/Documents/nnbinh/hcmus/DA_SOCKET_MMTNC_HCMUS/src/node/src/main/resources/node/nguoi_am_phu.mp3";
-        String destFileName = "/Users/Binh.Nguyen/Documents/nnbinh/hcmus/DA_SOCKET_MMTNC_HCMUS/src/nguoi_am_phu.mp3";
-        new Sender(Constant.UDP_PORT, new File(fileName), destFileName);
-//        new Sender(Constant.UDP_PORT, Constant.UDP_PORT + 1, fileName, destFileName);
-        // parse parameters
-//        if (args.length != 4) {
-//            System.err.println("Usage: java Sender sk1_dst_port, sk4_dst_port, inputFilePath, outputFileName");
-//            System.exit(-1);
-//        }
-//        else new Sender(Integer.parseInt(args[0]), Integer.parseInt(args[1]), args[2], args[3]);
     }
 }

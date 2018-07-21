@@ -42,14 +42,16 @@ public class NodeController extends BaseController<INodeContract.View> implement
                 public void onReceived(String message) {
                     System.out.println("onReceived: " + message);
                     if (message.contains(Constant.MSG_PLS_SEND_YOUR_FILES)) {
-                        message = message.replace(Constant.MSG_PLS_SEND_YOUR_FILES+":","");
+                        String[] words = message.split(":");
+                        String clientIP = words[1];
+                        message = words[2].replace(Constant.MSG_PLS_SEND_YOUR_FILES+":","");
                         String[] parts = message.split(";");
                         for (File f:node.getFiles()) {
                             if (message.contains(f.getName())) {
 //                                UDPSender sender = new UDPSender(node.getLocalPort(), Constant.LOCAL_HOST_NAME);
 //                                sender.sendFile(f);
                                 String storagePath = parts[1].split(" ")[0].trim();
-                                new Sender(node.getLocalPort(), f, storagePath);
+                                new Sender(node.getLocalPort(), f, storagePath, clientIP);
                                 return;
                             }
                         }
