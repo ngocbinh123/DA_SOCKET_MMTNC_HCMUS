@@ -16,17 +16,19 @@ public class Receiver {
     static int pkt_size = 1000;
     private HandleListener mListener;
     private String storagePath;
+    private String nodeIP;
     public interface HandleListener {
         void onCompleted(File file);
         void onError(String err);
     }
 
-    public Receiver(String storagePath, int port, HandleListener listener) {
-        this(storagePath, port, port + 2, listener);
+    public Receiver(String storagePath, String nodeIP, int port, HandleListener listener) {
+        this(storagePath, nodeIP, port, port + 2, listener);
     }
 
     // Receiver constructor
-    public Receiver(String storagePath, int sk2_dst_port, int sk3_dst_port, HandleListener listener) {
+    public Receiver(String storagePath, String nodeIP, int sk2_dst_port, int sk3_dst_port, HandleListener listener) {
+        this.nodeIP = nodeIP;
         this.mListener = listener;
         DatagramSocket sk2, sk3;
         System.out.println("Receiver: sk2_dst_port=" + sk2_dst_port + ", " + "sk3_dst_port=" + sk3_dst_port + ".");
@@ -43,7 +45,8 @@ public class Receiver {
             try {
                 byte[] in_data = new byte[pkt_size];									// message data in packet
                 DatagramPacket in_pkt = new DatagramPacket(in_data,	in_data.length);	// incoming packet
-                InetAddress dst_addr = InetAddress.getByName("127.0.0.1");
+//                InetAddress dst_addr = InetAddress.getByName("127.0.0.1");
+                InetAddress dst_addr = InetAddress.getByName(nodeIP);
 
                 FileOutputStream fos = null;
                 File file = null;

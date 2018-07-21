@@ -28,7 +28,7 @@ public class ClientController extends BaseController<IClientContract.View> imple
 
     @Override
     public void requestNodeSendFileByUDPReliable(int index, NodeFile nodeFile, String storagePath) {
-        new Thread(()-> new Receiver(storagePath, nodeFile.getNodePort(), new Receiver.HandleListener() {
+        new Thread(()-> new Receiver(storagePath, nodeFile.getNodeIP(), nodeFile.getNodePort(), new Receiver.HandleListener() {
             @Override
             public void onCompleted(File file) {
                 nodeFile.setLocalFile(file);
@@ -43,7 +43,7 @@ public class ClientController extends BaseController<IClientContract.View> imple
 
         new Thread(() -> {
             UDPSender sender = new UDPSender(nodeFile.getNodePort()+1, nodeFile.getNodeIP());
-            sender.sendMessage(String.format("%s:%s;%s",Constant.MSG_PLS_SEND_YOUR_FILES, nodeFile.getName(), storagePath));
+            sender.sendMessage(String.format("%s:%s:%s;%s",Constant.MSG_PLS_SEND_YOUR_FILES, getIP(),nodeFile.getName(), storagePath));
         }).start();
     }
 
@@ -67,7 +67,7 @@ public class ClientController extends BaseController<IClientContract.View> imple
 
         new Thread(() -> {
             UDPSender sender = new UDPSender(nodeFile.getNodePort()+1, nodeFile.getNodeIP());
-            sender.sendMessage(String.format("%s:%s",Constant.MSG_PLS_SEND_YOUR_FILES, nodeFile.getName()));
+            sender.sendMessage(String.format("%s:%s",Constant.MSG_PLS_SEND_YOUR_FILES,  nodeFile.getName()));
         }).start();
     }
 
